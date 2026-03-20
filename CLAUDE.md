@@ -10,6 +10,24 @@ Free, cross-platform phonics blending board web app for educators. Competitive a
 - **Issue Prefix**: MOD-
 - **Platforms**: Web (primary), iOS, Android (via Expo)
 - **Architecture**: See `/docs/ARCHITECTURE.md`
+- **Production URL**: https://phonics.staylo.io
+- **Competitor**: Blend Reading — https://blendreading.com (library at /library)
+- **Repo**: https://github.com/mhamel06/phonicsboard
+
+### Deployment
+
+- **Host**: DigitalOcean Droplet (nginx serving static files)
+- **CI/CD**: GitHub Actions (`.github/workflows/deploy.yml`) — auto-deploys on push to `main`
+- **Pipeline**: `npm ci` → `npm test` → `npx expo export --platform web` → `rsync dist/` to Droplet
+- **Domain**: `phonics.staylo.io` (SSL via certbot)
+- **Static files**: `/var/www/phonicsboard/` on the Droplet
+
+### Preset Data Architecture
+
+- Preset playlists/decks are defined in code (`src/data/playlists/`, `src/data/presets/`)
+- Code is **authoritative** for presets — AsyncStorage and Supabase cloud sync never overwrite preset data
+- User-created playlists ARE persisted to AsyncStorage and synced to Supabase
+- When updating preset word lists, the changes take effect on next app load (no migration needed)
 
 ### Release Phases
 

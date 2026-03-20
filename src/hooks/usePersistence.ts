@@ -3,7 +3,7 @@ import { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { useAppDispatch, useAppSelector } from '@/store/store';
 import { setDecks } from '@/store/decksSlice';
 import { setPlaylists } from '@/store/playlistsSlice';
-import { toggleAudio, setTheme, toggleFocusDefault } from '@/store/settingsSlice';
+import { toggleAudio, setTheme, toggleFocusDefault, setDisplayScale } from '@/store/settingsSlice';
 import {
   saveDecks,
   loadDecks,
@@ -93,6 +93,9 @@ export function usePersistence(): boolean {
       }
       if (saved.theme !== settings.theme) {
         dispatch(setTheme(saved.theme));
+      }
+      if (saved.displayScale != null && saved.displayScale !== settings.displayScale) {
+        dispatch(setDisplayScale(saved.displayScale));
       }
     }
 
