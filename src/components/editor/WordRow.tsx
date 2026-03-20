@@ -7,7 +7,7 @@
  * A "+" button at the end lets the user restore hidden columns.
  */
 
-import React, { useState } from 'react';
+import React from 'react';
 import {
   Pressable,
   StyleSheet,
@@ -63,7 +63,7 @@ export default function WordRow({
   isActiveRow,
   onToggleColumn,
 }: WordRowProps) {
-  const [showRestore, setShowRestore] = useState(false);
+
 
   // Determine which columns are active
   const allColumns = Array.from({ length: columnCount }, (_, i) => i);
@@ -145,47 +145,19 @@ export default function WordRow({
           );
         })}
 
-        {/* Restore hidden columns button */}
+        {/* Restore next hidden column button */}
         {hiddenColumns.length > 0 && onToggleColumn && (
-          <View style={styles.restoreContainer}>
-            <Pressable
-              onPress={() => setShowRestore((prev) => !prev)}
-              style={({ pressed }) => [
-                styles.restoreButton,
-                pressed && styles.restoreButtonPressed,
-              ]}
-              accessibilityRole="button"
-              accessibilityLabel="Restore hidden columns"
-            >
-              <Feather name="plus" size={16} color={APP_COLORS.primary} />
-            </Pressable>
-
-            {showRestore && (
-              <View style={styles.restoreDropdown}>
-                {hiddenColumns.map((colIndex) => (
-                  <Pressable
-                    key={`restore-${colIndex}`}
-                    onPress={() => {
-                      onToggleColumn(colIndex);
-                      if (hiddenColumns.length <= 1) {
-                        setShowRestore(false);
-                      }
-                    }}
-                    style={({ pressed }) => [
-                      styles.restoreItem,
-                      pressed && styles.restoreItemPressed,
-                    ]}
-                    accessibilityRole="button"
-                    accessibilityLabel={`Restore column ${colIndex + 1}`}
-                  >
-                    <Text style={styles.restoreItemText}>
-                      Col {colIndex + 1}
-                    </Text>
-                  </Pressable>
-                ))}
-              </View>
-            )}
-          </View>
+          <Pressable
+            onPress={() => onToggleColumn(hiddenColumns[0])}
+            style={({ pressed }) => [
+              styles.restoreButton,
+              pressed && styles.restoreButtonPressed,
+            ]}
+            accessibilityRole="button"
+            accessibilityLabel={`Restore column ${hiddenColumns[0] + 1}`}
+          >
+            <Feather name="plus" size={16} color={APP_COLORS.primary} />
+          </Pressable>
         )}
       </View>
 
@@ -294,9 +266,6 @@ const styles = StyleSheet.create({
   hideColumnPressed: {
     backgroundColor: '#FEE2E2',
   },
-  restoreContainer: {
-    position: 'relative',
-  },
   restoreButton: {
     width: 32,
     height: 48,
@@ -310,35 +279,6 @@ const styles = StyleSheet.create({
   },
   restoreButtonPressed: {
     backgroundColor: '#DEF7EC',
-  },
-  restoreDropdown: {
-    position: 'absolute',
-    top: 52,
-    left: 0,
-    backgroundColor: APP_COLORS.surface,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 4,
-    zIndex: 10,
-    minWidth: 80,
-  },
-  restoreItem: {
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-  },
-  restoreItemPressed: {
-    backgroundColor: '#F3F4F6',
-  },
-  restoreItemText: {
-    fontSize: 13,
-    fontWeight: '500',
-    color: APP_COLORS.textPrimary,
-    fontFamily: 'Inter',
   },
   deleteButton: {
     marginLeft: 8,
