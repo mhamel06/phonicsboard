@@ -129,8 +129,8 @@ export default function ScaleControls({
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
-    bottom: 16,
-    left: 16,
+    top: 70,
+    right: 16,
     zIndex: 100,
   },
   bar: {
