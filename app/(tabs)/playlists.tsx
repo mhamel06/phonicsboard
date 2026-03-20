@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Alert, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 
 import { useAppDispatch, useAppSelector } from '@/store/store';
@@ -129,18 +129,25 @@ export default function PlaylistsScreen() {
                 onDelete={
                   !item.isPreset
                     ? () => {
-                        Alert.alert(
-                          'Delete Playlist',
-                          `Are you sure you want to delete "${item.name}"?`,
-                          [
-                            { text: 'Cancel', style: 'cancel' },
-                            {
-                              text: 'Delete',
-                              style: 'destructive',
-                              onPress: () => dispatch(deletePlaylist(item.id)),
-                            },
-                          ],
-                        );
+                        if (Platform.OS === 'web') {
+                          if (window.confirm(`Delete "${item.name}"?`)) {
+                            dispatch(deletePlaylist(item.id));
+                          }
+                        } else {
+                          const { Alert } = require('react-native');
+                          Alert.alert(
+                            'Delete Playlist',
+                            `Are you sure you want to delete "${item.name}"?`,
+                            [
+                              { text: 'Cancel', style: 'cancel' },
+                              {
+                                text: 'Delete',
+                                style: 'destructive',
+                                onPress: () => dispatch(deletePlaylist(item.id)),
+                              },
+                            ],
+                          );
+                        }
                       }
                     : undefined
                 }
