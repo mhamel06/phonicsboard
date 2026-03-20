@@ -90,38 +90,53 @@ export default function DeckBoard({
         ))}
       </View>
 
-      {/* Tile columns — horizontal scroll with vertical scroll per column */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator
-        contentContainerStyle={
-          resolvedTileLayout === 'grid'
-            ? styles.columnsContentGrid
-            : styles.columnsContent
-        }
-        style={styles.columnsScroll}
-      >
-        {deck.columns.map((column, index) => (
-          <ScrollView
-            key={column.id}
-            nestedScrollEnabled
-            showsVerticalScrollIndicator
-            style={
-              resolvedTileLayout === 'grid'
-                ? styles.columnWrapperGrid
-                : styles.columnWrapperList
-            }
-          >
-            <TileColumn
-              column={column}
-              onTilePress={(grapheme) => handleTilePress(index, grapheme)}
-              onCollapse={() => handleToggleCollapse(index)}
-              scale={scale}
-              tileLayout={resolvedTileLayout}
-            />
-          </ScrollView>
-        ))}
-      </ScrollView>
+      {/* Tile columns */}
+      {resolvedTileLayout === 'grid' ? (
+        /* Desktop: flex row, all columns fit on screen */
+        <View style={styles.columnsRowGrid}>
+          {deck.columns.map((column, index) => (
+            <ScrollView
+              key={column.id}
+              nestedScrollEnabled
+              showsVerticalScrollIndicator
+              style={styles.columnWrapperGrid}
+            >
+              <TileColumn
+                column={column}
+                onTilePress={(grapheme) => handleTilePress(index, grapheme)}
+                onCollapse={() => handleToggleCollapse(index)}
+                scale={scale}
+                tileLayout="grid"
+              />
+            </ScrollView>
+          ))}
+        </View>
+      ) : (
+        /* Mobile: horizontal scroll */
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator
+          contentContainerStyle={styles.columnsContent}
+          style={styles.columnsScroll}
+        >
+          {deck.columns.map((column, index) => (
+            <ScrollView
+              key={column.id}
+              nestedScrollEnabled
+              showsVerticalScrollIndicator
+              style={styles.columnWrapperList}
+            >
+              <TileColumn
+                column={column}
+                onTilePress={(grapheme) => handleTilePress(index, grapheme)}
+                onCollapse={() => handleToggleCollapse(index)}
+                scale={scale}
+                tileLayout="list"
+              />
+            </ScrollView>
+          ))}
+        </ScrollView>
+      )}
     </View>
   );
 }
@@ -148,20 +163,20 @@ const styles = StyleSheet.create({
   columnsScroll: {
     flex: 1,
   },
+  columnsRowGrid: {
+    flex: 1,
+    flexDirection: 'row',
+    paddingHorizontal: 8,
+    paddingVertical: 8,
+    gap: 4,
+  },
   columnsContent: {
     paddingHorizontal: 8,
     paddingVertical: 8,
     gap: 8,
   },
-  columnsContentGrid: {
-    paddingHorizontal: 8,
-    paddingVertical: 8,
-    gap: 8,
-    flexGrow: 1,
-  },
   columnWrapperGrid: {
     flex: 1,
-    minWidth: 140,
   },
   columnWrapperList: {
     width: 180,
