@@ -1,8 +1,10 @@
 /**
- * R-Controlled playlist — original word chain using ar, er, ir, or, ur patterns.
+ * R-Controlled playlist — word chain using ar, er, ir, or, ur patterns.
  *
- * Each consecutive word differs by exactly one phoneme (onset, r-controlled vowel, or coda).
- * Chain: farm → harm → hard → card → cord → corn → born → barn → burn → turn → turf → surf → serf
+ * Covers all five r-controlled vowel sounds with single-syllable words.
+ * Expanded from original chain to include patterns from the R-Controlled
+ * reference (dar, lar, mar, char, snar, ber, per, ster, gir, thir, shir,
+ * bor, cor, dor, spor, cur, hur, mur, stur, parm, dorm, tort).
  *
  * Linked to the Combined Blends deck.
  */
@@ -18,19 +20,43 @@ function word(graphemes: string[], position: number): PlaylistWord {
 }
 
 const words: PlaylistWord[] = [
+  // ar patterns
   word(['f', 'ar', 'm'], 0),
   word(['h', 'ar', 'm'], 1),
-  word(['h', 'ar', 'd'], 2),
-  word(['c', 'ar', 'd'], 3),
-  word(['c', 'or', 'd'], 4),
-  word(['c', 'or', 'n'], 5),
-  word(['b', 'or', 'n'], 6),
-  word(['b', 'ar', 'n'], 7),
-  word(['b', 'ur', 'n'], 8),
-  word(['t', 'ur', 'n'], 9),
-  word(['t', 'ur', 'f'], 10),
-  word(['s', 'ur', 'f'], 11),
-  word(['s', 'er', 'f'], 12),
+  word(['ch', 'ar', 'm'], 2),
+  word(['h', 'ar', 'd'], 3),
+  word(['c', 'ar', 'd'], 4),
+  word(['d', 'ar', 'k'], 5),
+  word(['l', 'ar', 'k'], 6),
+  word(['m', 'ar', 'k'], 7),
+  word(['st', 'ar'], 8),
+  word(['st', 'ar', 't'], 9),
+  // or patterns
+  word(['c', 'or', 'd'], 10),
+  word(['c', 'or', 'n'], 11),
+  word(['b', 'or', 'n'], 12),
+  word(['h', 'or', 'n'], 13),
+  word(['sh', 'or', 't'], 14),
+  word(['sp', 'or', 't'], 15),
+  word(['f', 'or', 't'], 16),
+  word(['n', 'or', 'th'], 17),
+  // ir / er patterns
+  word(['g', 'ir', 'l'], 18),
+  word(['b', 'ir', 'd'], 19),
+  word(['th', 'ir', 'd'], 20),
+  word(['sh', 'ir', 't'], 21),
+  word(['h', 'er', 'd'], 22),
+  word(['h', 'er', 'b'], 23),
+  word(['p', 'er', 'ch'], 24),
+  word(['st', 'er', 'n'], 25),
+  // ur patterns
+  word(['b', 'ur', 'n'], 26),
+  word(['t', 'ur', 'n'], 27),
+  word(['c', 'ur', 'l'], 28),
+  word(['h', 'ur', 'l'], 29),
+  word(['t', 'ur', 'f'], 30),
+  word(['s', 'ur', 'f'], 31),
+  word(['p', 'ur', 'r'], 32),
 ];
 
 // ---------------------------------------------------------------------------

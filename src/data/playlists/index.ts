@@ -14,6 +14,9 @@ import { openSyllablesPlaylist } from './open-syllables';
 import { twoSyllableClosedClosedPlaylist } from './two-syllable-closed-closed';
 import { twoSyllableOpenClosedPlaylist } from './two-syllable-open-closed';
 import { closedSyllableExceptionsPlaylist } from './closed-syllable-exceptions';
+import { closedSyllablesPlaylist } from './closed-syllables';
+import { silentEPlaylist } from './silent-e';
+import { consonantLePlaylist } from './consonant-le';
 
 export {
   cvcStarterPlaylist,
@@ -26,6 +29,9 @@ export {
   twoSyllableClosedClosedPlaylist,
   twoSyllableOpenClosedPlaylist,
   closedSyllableExceptionsPlaylist,
+  closedSyllablesPlaylist,
+  silentEPlaylist,
+  consonantLePlaylist,
 };
 
 export const allPlaylists: Playlist[] = [
@@ -39,4 +45,7 @@ export const allPlaylists: Playlist[] = [
   twoSyllableClosedClosedPlaylist,
   twoSyllableOpenClosedPlaylist,
   closedSyllableExceptionsPlaylist,
+  closedSyllablesPlaylist,
+  silentEPlaylist,
+  consonantLePlaylist,
 ];

@@ -2,7 +2,9 @@
  * Open Syllables playlist — words featuring open syllable patterns.
  *
  * Open syllables end in a vowel, making the vowel long (says its name).
- * Chain progresses from simple CV to multisyllable open patterns.
+ * Covers all five vowels plus y, with blends and digraphs as onsets,
+ * matching the Open Syllables reference (ca, da, fa… be, de… bi, di…
+ * bo, co… bu, cu… dy, fy, hy, ny).
  *
  * Linked to the Combined Blends deck.
  */
@@ -18,17 +20,34 @@ function word(graphemes: string[], position: number): PlaylistWord {
 }
 
 const words: PlaylistWord[] = [
+  // Open a
   word(['g', 'o'], 0),
   word(['n', 'o'], 1),
   word(['s', 'o'], 2),
-  word(['m', 'e'], 3),
-  word(['h', 'e'], 4),
-  word(['sh', 'e'], 5),
-  word(['w', 'e'], 6),
-  word(['b', 'e'], 7),
-  word(['b', 'y'], 8),
-  word(['m', 'y'], 9),
-  word(['h', 'i'], 10),
+  word(['pr', 'o'], 3),
+  // Open e
+  word(['m', 'e'], 4),
+  word(['h', 'e'], 5),
+  word(['sh', 'e'], 6),
+  word(['w', 'e'], 7),
+  word(['b', 'e'], 8),
+  // Open i
+  word(['h', 'i'], 9),
+  word(['sk', 'i'], 10),
+  // Open y
+  word(['b', 'y'], 11),
+  word(['m', 'y'], 12),
+  word(['fl', 'y'], 13),
+  word(['tr', 'y'], 14),
+  word(['cr', 'y'], 15),
+  word(['dr', 'y'], 16),
+  word(['sk', 'y'], 17),
+  word(['sp', 'y'], 18),
+  word(['fr', 'y'], 19),
+  word(['sh', 'y'], 20),
+  word(['sl', 'y'], 21),
+  // Open u
+  word(['fl', 'u'], 22),
 ];
 
 // ---------------------------------------------------------------------------
