@@ -19,8 +19,8 @@ import { createClient } from '@supabase/supabase-js';
 //   const SUPABASE_URL = Constants.expoConfig?.extra?.supabaseUrl;
 //   const SUPABASE_ANON_KEY = Constants.expoConfig?.extra?.supabaseAnonKey;
 
-const SUPABASE_URL = 'https://your-project.supabase.co';
-const SUPABASE_ANON_KEY = 'your-anon-key';
+const SUPABASE_URL = 'https://hqmrctsuokautqbxdzkg.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhxbXJjdHN1b2thdXRxYnhkemtnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM5Njc0NzMsImV4cCI6MjA4OTU0MzQ3M30._DrGXJBxnXamI2j5GzYFVIG1pFZ91rt_t27ArOjeFWI';
 
 // ---------------------------------------------------------------------------
 // Client
