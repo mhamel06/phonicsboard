@@ -114,7 +114,24 @@ export default function PlaylistsScreen() {
               <PlaylistCard
                 playlist={item}
                 onPlay={() => router.push(`/playlist/${item.id}`)}
-                onEdit={() => router.push(`/playlist/editor/${item.id}`)}
+                onEdit={() => {
+                  if (item.isPreset) {
+                    // Copy-on-edit: presets are read-only, so create a user copy first
+                    const copyId = `playlist-${Date.now()}`;
+                    dispatch(
+                      addPlaylist({
+                        ...item,
+                        id: copyId,
+                        name: `${item.name} (Edit)`,
+                        isPreset: false,
+                        createdAt: new Date().toISOString(),
+                      }),
+                    );
+                    router.push(`/playlist/editor/${copyId}`);
+                  } else {
+                    router.push(`/playlist/editor/${item.id}`);
+                  }
+                }}
                 onCopy={() => {
                   dispatch(
                     addPlaylist({
