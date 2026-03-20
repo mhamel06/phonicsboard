@@ -90,10 +90,10 @@ export default function DeckBoard({
         ))}
       </View>
 
-      {/* Tile columns — flex row on desktop, horizontal scroll on mobile */}
+      {/* Tile columns — horizontal scroll with vertical scroll per column */}
       <ScrollView
-        horizontal={resolvedTileLayout === 'list'}
-        showsHorizontalScrollIndicator={false}
+        horizontal
+        showsHorizontalScrollIndicator
         contentContainerStyle={
           resolvedTileLayout === 'grid'
             ? styles.columnsContentGrid
@@ -102,8 +102,10 @@ export default function DeckBoard({
         style={styles.columnsScroll}
       >
         {deck.columns.map((column, index) => (
-          <View
+          <ScrollView
             key={column.id}
+            nestedScrollEnabled
+            showsVerticalScrollIndicator
             style={
               resolvedTileLayout === 'grid'
                 ? styles.columnWrapperGrid
@@ -117,7 +119,7 @@ export default function DeckBoard({
               scale={scale}
               tileLayout={resolvedTileLayout}
             />
-          </View>
+          </ScrollView>
         ))}
       </ScrollView>
     </View>
@@ -147,20 +149,21 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   columnsContent: {
-    paddingHorizontal: 12,
-    paddingVertical: 16,
-    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 8,
+    gap: 8,
   },
   columnsContentGrid: {
-    flexDirection: 'row',
-    paddingHorizontal: 12,
-    paddingVertical: 16,
+    paddingHorizontal: 8,
+    paddingVertical: 8,
     gap: 8,
     flexGrow: 1,
   },
   columnWrapperGrid: {
     flex: 1,
-    minWidth: 120,
+    minWidth: 140,
   },
-  columnWrapperList: {},
+  columnWrapperList: {
+    width: 180,
+  },
 });
