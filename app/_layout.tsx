@@ -17,6 +17,12 @@ function AppShell() {
   return (
     <Stack>
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      <Stack.Screen name="deck/[id]" options={{ headerShown: false }} />
+      <Stack.Screen name="deck/editor/[id]" options={{ headerShown: false }} />
+      <Stack.Screen name="playlist/[id]" options={{ headerShown: false }} />
+      <Stack.Screen name="playlist/editor/[id]" options={{ headerShown: false }} />
+      <Stack.Screen name="word-mat/[preset]" options={{ headerShown: false }} />
+      <Stack.Screen name="share/[code]" options={{ title: 'Import Shared Resource' }} />
     </Stack>
   );
 }

@@ -82,7 +82,7 @@ export default function WordMatPlayScreen() {
 
   const keyboardConfig = useMemo(
     () => ({
-      escape: () => router.back(),
+      escape: () => router.canGoBack() ? router.back() : router.replace('/word-mats'),
       backspace: handleClearLastBox,
       delete: handleClearLastBox,
       r: () => dispatch(clearAllBoxesAction()),

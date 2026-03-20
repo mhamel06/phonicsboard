@@ -63,7 +63,7 @@ export default function PlaylistPlayScreen() {
       arrowright: () => {
         if (playlist) dispatch(nextWordAction(playlist));
       },
-      escape: () => router.back(),
+      escape: () => router.canGoBack() ? router.back() : router.replace('/playlists'),
       f: () => dispatch(toggleFocusModeAction()),
       ' ': () => {
         /* Space — replay audio (placeholder for future audio support) */
@@ -102,7 +102,13 @@ export default function PlaylistPlayScreen() {
   const handlePrevious = () => dispatch(previousWordAction());
   const handleGoTo = (index: number) => dispatch(goToWordAction(index));
   const handleToggleFocus = () => dispatch(toggleFocusModeAction());
-  const handleBack = () => router.back();
+  const handleBack = () => {
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace('/playlists');
+    }
+  };
 
   return (
     <View style={styles.screen}>

@@ -102,7 +102,11 @@ export default function DeckPlayScreen() {
     if (deckState) {
       dispatch(addToHistoryAction());
     }
-    router.back();
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace('/');
+    }
   }, [deckState, dispatch, router]);
 
   const handleTilePress = useCallback(
