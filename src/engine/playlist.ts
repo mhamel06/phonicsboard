@@ -11,6 +11,8 @@ export function createPlaylistState(playlist: Playlist): PlaylistState {
     playlistId: playlist.id,
     currentIndex: 0,
     isFocusMode: false,
+    isShuffled: false,
+    shuffledOrder: [],
   };
 }
 
@@ -80,18 +82,75 @@ export function toggleFocusMode(state: PlaylistState): PlaylistState {
 }
 
 /**
+ * Toggles shuffle mode on/off.
+ * When enabling: creates a Fisher-Yates shuffled order, keeping the current
+ * word at position 0, and resets currentIndex to 0.
+ * When disabling: restores original order and sets currentIndex back to the
+ * original position of the current word.
+ */
+export function toggleShuffle(
+  state: PlaylistState,
+  playlist: Playlist,
+): PlaylistState {
+  if (state.isShuffled) {
+    // Restore original order — find the original index of the current word
+    const originalIndex = state.shuffledOrder[state.currentIndex] ?? 0;
+    return {
+      ...state,
+      isShuffled: false,
+      shuffledOrder: [],
+      currentIndex: originalIndex,
+    };
+  }
+
+  // Build shuffled order using Fisher-Yates
+  const count = playlist.words.length;
+  const order: number[] = Array.from({ length: count }, (_, i) => i);
+
+  // Fisher-Yates shuffle (starting from the end)
+  for (let i = count - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    const temp = order[i]!;
+    order[i] = order[j]!;
+    order[j] = temp;
+  }
+
+  // Move the current word's original index to position 0
+  const currentOriginalIndex = state.currentIndex;
+  const posOfCurrent = order.indexOf(currentOriginalIndex);
+  if (posOfCurrent !== 0) {
+    const temp = order[0]!;
+    order[0] = order[posOfCurrent]!;
+    order[posOfCurrent] = temp;
+  }
+
+  return {
+    ...state,
+    isShuffled: true,
+    shuffledOrder: order,
+    currentIndex: 0,
+  };
+}
+
+/**
  * Returns the current word from the playlist based on state index.
+ * When shuffled, uses the shuffledOrder mapping to resolve the original word.
  * Throws if index is out of bounds (indicates a bug in state management).
  */
 export function getCurrentWord(
   state: PlaylistState,
   playlist: Playlist,
 ): PlaylistWord {
-  const word = playlist.words[state.currentIndex];
+  const resolvedIndex =
+    state.isShuffled && state.shuffledOrder.length > 0
+      ? state.shuffledOrder[state.currentIndex] ?? state.currentIndex
+      : state.currentIndex;
+
+  const word = playlist.words[resolvedIndex];
 
   if (!word) {
     throw new RangeError(
-      `Playlist index ${state.currentIndex} is out of bounds (playlist has ${playlist.words.length} words)`,
+      `Playlist index ${state.currentIndex} (resolved: ${resolvedIndex}) is out of bounds (playlist has ${playlist.words.length} words)`,
     );
   }
 

@@ -5,6 +5,7 @@ import {
   previousWord,
   goToWord,
   toggleFocusMode,
+  toggleShuffle,
   getCurrentWord,
   getChangedPhoneme,
 } from '../../src/engine/playlist';
@@ -186,9 +187,78 @@ describe('getCurrentWord', () => {
   });
 
   it('throws RangeError for out-of-bounds index', () => {
-    const state = { playlistId: 'p', currentIndex: 99, isFocusMode: false };
+    const state = { playlistId: 'p', currentIndex: 99, isFocusMode: false, isShuffled: false, shuffledOrder: [] as number[] };
 
     expect(() => getCurrentWord(state, samplePlaylist)).toThrow(RangeError);
+  });
+});
+
+describe('toggleShuffle', () => {
+  it('creates a valid shuffled order with all original indices', () => {
+    const state = createPlaylistState(samplePlaylist);
+    const result = toggleShuffle(state, samplePlaylist);
+
+    expect(result.isShuffled).toBe(true);
+    expect(result.shuffledOrder).toHaveLength(samplePlaylist.words.length);
+
+    // All original indices must be present
+    const sorted = [...result.shuffledOrder].sort((a, b) => a - b);
+    expect(sorted).toEqual([0, 1, 2, 3]);
+  });
+
+  it('keeps current word at position 0', () => {
+    let state = createPlaylistState(samplePlaylist);
+    state = nextWord(state, samplePlaylist); // currentIndex = 1
+    const result = toggleShuffle(state, samplePlaylist);
+
+    expect(result.currentIndex).toBe(0);
+    // The original index of the word we were on (1) should be at shuffledOrder[0]
+    expect(result.shuffledOrder[0]).toBe(1);
+  });
+
+  it('getCurrentWord uses shuffled order when shuffled', () => {
+    const state = createPlaylistState(samplePlaylist);
+    const shuffled = toggleShuffle(state, samplePlaylist);
+
+    // The word at currentIndex 0 should be the original word at shuffledOrder[0]
+    const word = getCurrentWord(shuffled, samplePlaylist);
+    const expectedOriginalIndex = shuffled.shuffledOrder[0]!;
+    expect(word).toBe(samplePlaylist.words[expectedOriginalIndex]);
+  });
+
+  it('restores original order when toggled again', () => {
+    let state = createPlaylistState(samplePlaylist);
+    state = nextWord(state, samplePlaylist); // currentIndex = 1
+
+    const shuffled = toggleShuffle(state, samplePlaylist);
+    const restored = toggleShuffle(shuffled, samplePlaylist);
+
+    expect(restored.isShuffled).toBe(false);
+    expect(restored.shuffledOrder).toEqual([]);
+    // Should restore to the original index of the word at position 0
+    expect(restored.currentIndex).toBe(1);
+  });
+
+  it('shuffled order contains all original indices exactly once', () => {
+    const state = createPlaylistState(samplePlaylist);
+    const result = toggleShuffle(state, samplePlaylist);
+
+    const indices = new Set(result.shuffledOrder);
+    expect(indices.size).toBe(samplePlaylist.words.length);
+
+    for (let i = 0; i < samplePlaylist.words.length; i++) {
+      expect(indices.has(i)).toBe(true);
+    }
+  });
+
+  it('resets currentIndex to 0 when enabling shuffle', () => {
+    let state = createPlaylistState(samplePlaylist);
+    state = nextWord(state, samplePlaylist);
+    state = nextWord(state, samplePlaylist); // currentIndex = 2
+
+    const result = toggleShuffle(state, samplePlaylist);
+
+    expect(result.currentIndex).toBe(0);
   });
 });
 

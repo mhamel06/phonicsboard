@@ -7,6 +7,7 @@ import {
   previousWord,
   goToWord,
   toggleFocusMode,
+  toggleShuffle,
 } from '@/engine/playlist';
 import { allPlaylists } from '@/data/playlists/index';
 
@@ -70,6 +71,14 @@ const playlistsSlice = createSlice({
       state.activePlaylistState = toggleFocusMode(state.activePlaylistState);
     },
 
+    toggleShuffleAction(state, action: PayloadAction<Playlist>) {
+      if (!state.activePlaylistState) return;
+      state.activePlaylistState = toggleShuffle(
+        state.activePlaylistState,
+        action.payload,
+      );
+    },
+
     addPlaylist(state, action: PayloadAction<Playlist>) {
       state.playlists.push(action.payload);
     },
@@ -98,6 +107,7 @@ export const {
   previousWordAction,
   goToWordAction,
   toggleFocusModeAction,
+  toggleShuffleAction,
   addPlaylist,
   updatePlaylist,
   deletePlaylist,

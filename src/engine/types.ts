@@ -99,6 +99,9 @@ export interface PlaylistState {
   playlistId: string;
   currentIndex: number;
   isFocusMode: boolean;
+  isShuffled: boolean;
+  /** Maps display position to original word index */
+  shuffledOrder: number[];
 }
 
 // === Word Mat ===

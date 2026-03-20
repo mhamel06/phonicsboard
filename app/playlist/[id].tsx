@@ -17,6 +17,7 @@ import {
   previousWordAction,
   goToWordAction,
   toggleFocusModeAction,
+  toggleShuffleAction,
 } from '@/store/playlistsSlice';
 import PlaylistPlayer from '@/components/playlist/PlaylistPlayer';
 import WordChainBar from '@/components/playlist/WordChainBar';
@@ -63,14 +64,23 @@ export default function PlaylistPlayScreen() {
       arrowright: () => {
         if (playlist) dispatch(nextWordAction(playlist));
       },
-      escape: () => router.canGoBack() ? router.back() : router.replace('/playlists'),
+      escape: () => {
+        if (playlistState?.isFocusMode) {
+          dispatch(toggleFocusModeAction());
+        } else {
+          router.canGoBack() ? router.back() : router.replace('/playlists');
+        }
+      },
       f: () => dispatch(toggleFocusModeAction()),
+      s: () => {
+        if (playlist) dispatch(toggleShuffleAction(playlist));
+      },
       ' ': () => {
         /* Space — replay audio (placeholder for future audio support) */
       },
       'shift+?': () => setShowHints((prev) => !prev),
     }),
-    [dispatch, playlist, router],
+    [dispatch, playlist, playlistState, router],
   );
   useKeyboardNav(keyboardConfig);
 
@@ -78,8 +88,9 @@ export default function PlaylistPlayScreen() {
     () => [
       { key: '\u2190', action: 'Previous word' },
       { key: '\u2192', action: 'Next word' },
-      { key: 'Esc', action: 'Go back' },
+      { key: 'Esc', action: 'Exit focus mode / Go back' },
       { key: 'F', action: 'Toggle focus mode' },
+      { key: 'S', action: 'Toggle shuffle' },
       { key: 'Space', action: 'Replay audio' },
     ],
     [],
@@ -102,6 +113,7 @@ export default function PlaylistPlayScreen() {
   const handlePrevious = () => dispatch(previousWordAction());
   const handleGoTo = (index: number) => dispatch(goToWordAction(index));
   const handleToggleFocus = () => dispatch(toggleFocusModeAction());
+  const handleToggleShuffle = () => dispatch(toggleShuffleAction(playlist));
   const handleBack = () => {
     if (router.canGoBack()) {
       router.back();
@@ -110,8 +122,13 @@ export default function PlaylistPlayScreen() {
     }
   };
 
+  const ScreenWrapper = isFocus ? Pressable : View;
+  const screenWrapperProps = isFocus
+    ? { onPress: handleToggleFocus, style: styles.screen }
+    : { style: styles.screen };
+
   return (
-    <View style={styles.screen}>
+    <ScreenWrapper {...screenWrapperProps}>
       {/* Top controls — hidden in focus mode */}
       {!isFocus && (
         <View style={styles.topBar}>
@@ -127,6 +144,25 @@ export default function PlaylistPlayScreen() {
           <Text style={styles.title} numberOfLines={1}>
             {playlist.name}
           </Text>
+
+          <Pressable
+            onPress={handleToggleShuffle}
+            style={[
+              styles.topButton,
+              playlistState.isShuffled && styles.topButtonActive,
+            ]}
+            accessibilityRole="button"
+            accessibilityLabel="Toggle shuffle"
+          >
+            <Text
+              style={[
+                styles.topButtonText,
+                playlistState.isShuffled && styles.topButtonTextActive,
+              ]}
+            >
+              Shuffle
+            </Text>
+          </Pressable>
 
           <Pressable
             onPress={handleToggleFocus}
@@ -182,7 +218,7 @@ export default function PlaylistPlayScreen() {
       )}
 
       {!isFocus && <KeyboardHints hints={playlistHints} visible={showHints} />}
-    </View>
+    </ScreenWrapper>
   );
 }
 
@@ -222,11 +258,17 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     backgroundColor: '#F3F4F6',
   },
+  topButtonActive: {
+    backgroundColor: APP_COLORS.textPrimary,
+  },
   topButtonText: {
     fontSize: 15,
     fontWeight: '600',
     color: APP_COLORS.textPrimary,
     fontFamily: 'Inter',
+  },
+  topButtonTextActive: {
+    color: '#FFFFFF',
   },
   title: {
     flex: 1,
