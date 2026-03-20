@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 
 import { useAppDispatch, useAppSelector } from '@/store/store';
 import { addPlaylist, deletePlaylist } from '@/store/playlistsSlice';
+import { useSharing } from '@/hooks/useSharing';
 import PlaylistCard from '@/components/playlist/PlaylistCard';
 import ShareButton from '@/components/common/ShareButton';
 import SearchFilter from '@/components/common/SearchFilter';
@@ -18,6 +19,7 @@ export default function PlaylistsScreen() {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const { playlists } = useAppSelector((state) => state.playlists);
+  const { importFromCode } = useSharing();
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState<SubTab>('library');
   const [importVisible, setImportVisible] = useState(false);
@@ -167,9 +169,12 @@ export default function PlaylistsScreen() {
       <ImportDialog
         visible={importVisible}
         onClose={() => setImportVisible(false)}
-        onImport={(code) => {
-          // TODO: look up share code and import the playlist/deck
-          console.log('Importing share code:', code);
+        onImport={async (code) => {
+          const success = await importFromCode(code);
+          if (success) {
+            setActiveTab('mine');
+          }
+          return success;
         }}
       />
     </View>

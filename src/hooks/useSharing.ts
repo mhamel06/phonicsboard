@@ -33,12 +33,12 @@ interface UseSharingResult {
   /** Share a deck and copy the share code to clipboard. */
   shareDeck: (
     userId: string,
-    deckId: string,
+    deck: Deck,
   ) => Promise<{ shareCode: string; shareUrl: string } | null>;
   /** Share a playlist and copy the share code to clipboard. */
   sharePlaylist: (
     userId: string,
-    playlistId: string,
+    playlist: Playlist,
   ) => Promise<{ shareCode: string; shareUrl: string } | null>;
   /** Import a shared resource by its code into local state + Redux. */
   importFromCode: (code: string) => Promise<boolean>;
@@ -55,10 +55,10 @@ export function useSharing(): UseSharingResult {
   const [isSharing, setIsSharing] = useState(false);
 
   const shareDeck = useCallback(
-    async (userId: string, deckId: string) => {
+    async (userId: string, deck: Deck) => {
       setIsSharing(true);
       try {
-        const result = await shareDeckService(userId, deckId);
+        const result = await shareDeckService(userId, deck);
 
         await copyToClipboard(result.shareCode);
 
@@ -74,10 +74,10 @@ export function useSharing(): UseSharingResult {
   );
 
   const sharePlaylist = useCallback(
-    async (userId: string, playlistId: string) => {
+    async (userId: string, playlist: Playlist) => {
       setIsSharing(true);
       try {
-        const result = await sharePlaylistService(userId, playlistId);
+        const result = await sharePlaylistService(userId, playlist);
 
         await copyToClipboard(result.shareCode);
 
@@ -96,30 +96,30 @@ export function useSharing(): UseSharingResult {
     async (code: string): Promise<boolean> => {
       setIsSharing(true);
       try {
-        const resource = await importSharedResource(code);
-        if (!resource) {
+        const result = await importSharedResource(code);
+        if (!result) {
           return false;
         }
 
-        // Determine if it's a deck or playlist by checking for deck-specific fields
-        if ('columns' in resource) {
-          const deck = resource as Deck;
-          // Mark as non-preset and give it a fresh updatedAt
+        const { resourceType, data } = result;
+
+        if (resourceType === 'deck') {
+          const deck = data as Deck;
           const importedDeck: Deck = {
             ...deck,
             isPreset: false,
             updatedAt: new Date().toISOString(),
           };
           dispatch(addDeck(importedDeck));
-        } else if ('words' in resource) {
-          const playlist = resource as Playlist;
+        } else if (resourceType === 'playlist') {
+          const playlist = data as Playlist;
           const importedPlaylist: Playlist = {
             ...playlist,
             isPreset: false,
           };
           dispatch(addPlaylist(importedPlaylist));
         } else {
-          console.warn('[useSharing] Unknown resource type');
+          console.warn('[useSharing] Unknown resource type:', resourceType);
           return false;
         }
 

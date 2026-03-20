@@ -28,8 +28,8 @@ export interface ImportDialogProps {
   visible: boolean;
   /** Called when the user closes the dialog */
   onClose: () => void;
-  /** Called with the entered code when the user taps Import */
-  onImport: (code: string) => void;
+  /** Called with the entered code when the user taps Import. Returns true on success. */
+  onImport: (code: string) => Promise<boolean>;
 }
 
 type ImportStatus = 'idle' | 'loading' | 'success' | 'error';
@@ -60,8 +60,13 @@ export default function ImportDialog({
     setErrorMessage('');
 
     try {
-      onImport(trimmed);
-      setStatus('success');
+      const success = await onImport(trimmed);
+      if (success) {
+        setStatus('success');
+      } else {
+        setStatus('error');
+        setErrorMessage('Could not import. Please check the code and try again.');
+      }
     } catch {
       setStatus('error');
       setErrorMessage('Could not import. Please check the code and try again.');

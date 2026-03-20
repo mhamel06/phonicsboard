@@ -13,39 +13,30 @@ function g(
   return { id: `${prefix}-c${col}-${slug}`, text, type, color };
 }
 
-// --- Column data ---
+// --- Column 1: initial consonants + digraphs ---
 
-const col1Texts = [
+const P = 'sep'; // prefix
+
+const col1Consonants = [
   'b', 'c', 'd', 'f', 'g', 'h', 'j', 'k',
-  'l', 'm', 'n', 'p', 'r', 's', 't', 'v', 'w', 'z',
+  'l', 'm', 'n', 'p', 'r', 's', 't', 'v', 'w', 'y', 'z',
 ];
+
+const col1Digraphs = [
+  'ch', 'kn', 'ph', 'sh', 'th', 'qu', 'wh', 'wr',
+];
+
+const col1Graphemes: Grapheme[] = [
+  ...col1Consonants.map((t) => g(P, 1, t, 'consonant', 'pink')),
+  ...col1Digraphs.map((t) => g(P, 1, t, 'digraph', 'pink')),
+];
+
+// --- Column 2: blends ---
 
 const col2Texts = [
   'c', 'cr', 'k', 'l', 'm', 'n', 'p', 'pl', 'pr',
   'qu', 'r', 's', 't', 'tr', 'w',
 ];
-
-const col3Texts = [
-  'a', 'e', 'i', 'o', 'u',
-  'ai', 'ay', 'ea', 'ee', 'ei', 'igh', 'oa', 'ue', 'ui', 'y',
-];
-
-const col4Texts = ['c', 'f', 'l', 'm', 'n', 'p', 's', 'x'];
-
-const col5Texts = [
-  'b', 'c', 'd', 'ff', 'g', 'k', 'll', 'm',
-  'n', 'p', 'r', 's', 'ss', 't', 'v', 'x',
-];
-
-const col6Texts = ['e', 'es', 's'];
-
-// --- Build grapheme arrays ---
-
-const P = 'sep'; // prefix
-
-const col1Graphemes: Grapheme[] = col1Texts.map((t) =>
-  g(P, 1, t, 'consonant', 'pink'),
-);
 
 const col2Graphemes: Grapheme[] = col2Texts.map((t) => {
   const isBlend = t.length > 1 && t !== 'qu';
@@ -54,18 +45,52 @@ const col2Graphemes: Grapheme[] = col2Texts.map((t) => {
   return g(P, 2, t, type, color);
 });
 
-const col3Graphemes: Grapheme[] = col3Texts.map((t) => {
-  const isTeam = t.length > 1;
-  return g(P, 3, t, isTeam ? 'vowel_team' : 'vowel', 'orange');
-});
+// --- Column 3: vowels + vowel teams + r-controlled + diphthongs ---
+
+const col3Vowels = ['a', 'e', 'i', 'o', 'u'];
+
+const col3Teams = [
+  'ai', 'ay', 'ea', 'ee', 'ei', 'igh', 'oa', 'ue', 'ui', 'y',
+];
+
+const col3RControlled = ['ar', 'or', 'ur', 'er', 'ir'];
+
+const col3Diphthongs = ['au', 'aw', 'ew', 'oi', 'oy', 'ou', 'ow', 'oo'];
+
+const col3Graphemes: Grapheme[] = [
+  ...col3Vowels.map((t) => g(P, 3, t, 'vowel', 'orange')),
+  ...col3Teams.map((t) => g(P, 3, t, 'vowel_team', 'orange')),
+  ...col3RControlled.map((t) => g(P, 3, t, 'r_controlled', 'teal')),
+  ...col3Diphthongs.map((t) => g(P, 3, t, 'vowel_team', 'teal')),
+];
+
+// --- Column 4: medial consonants ---
+
+const col4Texts = ['c', 'f', 'l', 'm', 'n', 'p', 's', 'x'];
 
 const col4Graphemes: Grapheme[] = col4Texts.map((t) =>
   g(P, 4, t, 'consonant', 'teal'),
 );
 
-const col5Graphemes: Grapheme[] = col5Texts.map((t) =>
-  g(P, 5, t, 'consonant', 'pink'),
-);
+// --- Column 5: final consonants + final digraphs ---
+
+const col5Consonants = [
+  'b', 'c', 'd', 'ff', 'g', 'k', 'll', 'm',
+  'n', 'p', 'r', 's', 'ss', 't', 'v', 'x', 'z', 'zz',
+];
+
+const col5Digraphs = [
+  'ch', 'ck', 'dge', 'ng', 'ph', 'sh', 'th', 'tch',
+];
+
+const col5Graphemes: Grapheme[] = [
+  ...col5Consonants.map((t) => g(P, 5, t, 'consonant', 'pink')),
+  ...col5Digraphs.map((t) => g(P, 5, t, 'digraph', 'pink')),
+];
+
+// --- Column 6: suffixes ---
+
+const col6Texts = ['e', 'es', 's'];
 
 const col6Graphemes: Grapheme[] = col6Texts.map((t) =>
   g(P, 6, t, 'suffix', 'lavender'),

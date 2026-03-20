@@ -66,6 +66,19 @@ export default function ShareButton({
     (state) => state.auth.isAuthenticated,
   );
   const userId = useAppSelector((state) => state.auth.user?.id ?? null);
+
+  // Read the actual resource data from Redux so we can embed it in the share
+  const deck = useAppSelector((state) =>
+    resourceType === 'deck'
+      ? state.decks.decks.find((d) => d.id === resourceId) ?? null
+      : null,
+  );
+  const playlist = useAppSelector((state) =>
+    resourceType === 'playlist'
+      ? state.playlists.playlists.find((p) => p.id === resourceId) ?? null
+      : null,
+  );
+
   const { shareDeck, sharePlaylist, isSharing } = useSharing();
 
   const [modalVisible, setModalVisible] = useState(false);
@@ -89,12 +102,19 @@ export default function ShareButton({
       return;
     }
 
+    const resourceData = resourceType === 'deck' ? deck : playlist;
+    if (!resourceData) {
+      setError('Resource not found');
+      setModalVisible(true);
+      return;
+    }
+
     setModalVisible(true);
 
     const result =
       resourceType === 'deck'
-        ? await shareDeck(userId, resourceId)
-        : await sharePlaylist(userId, resourceId);
+        ? await shareDeck(userId, resourceData)
+        : await sharePlaylist(userId, resourceData);
 
     if (result) {
       setShareCode(result.shareCode);
