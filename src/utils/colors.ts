@@ -59,3 +59,35 @@ export function getTileColor(type: GraphemeType): string {
 
 /** Gold background for vowel card slots */
 export const VOWEL_DISPLAY_COLOR = '#F2CC8F';
+
+// ---------------------------------------------------------------------------
+// TileColor → hex mapping — used by the deck editor color palette
+// ---------------------------------------------------------------------------
+
+import type { TileColor } from '@/engine/types';
+
+export const TILE_COLOR_HEX: Record<TileColor, string> = {
+  white: '#FFFFFF',
+  pink: '#F4A6C1',
+  teal: '#2A9D8F',
+  peach: '#F4B69C',
+  red: '#E07A5F',
+  green: '#81B29A',
+  purple: '#9B8EC4',
+  yellow: '#F2CC8F',
+  blue: '#7C9CBF',
+  orange: '#E9C46A',
+  lavender: '#C4B5E0',
+} as const;
+
+/** All tile colors available for the editor palette */
+export const EDITOR_PALETTE_COLORS: TileColor[] = [
+  'white',
+  'pink',
+  'teal',
+  'peach',
+  'red',
+  'green',
+  'purple',
+  'yellow',
+] as const;

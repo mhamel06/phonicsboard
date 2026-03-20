@@ -70,6 +70,21 @@ const decksSlice = createSlice({
       if (!state.activeDeckState) return;
       state.activeDeckState = addToHistory(state.activeDeckState);
     },
+
+    addDeck(state, action: PayloadAction<Deck>) {
+      state.decks.push(action.payload);
+    },
+
+    updateDeck(state, action: PayloadAction<Deck>) {
+      const index = state.decks.findIndex((d) => d.id === action.payload.id);
+      if (index !== -1) {
+        state.decks[index] = action.payload;
+      }
+    },
+
+    deleteDeck(state, action: PayloadAction<string>) {
+      state.decks = state.decks.filter((d) => d.id !== action.payload);
+    },
   },
 });
 
@@ -80,6 +95,9 @@ export const {
   resetCardsAction,
   shuffleAction,
   addToHistoryAction,
+  addDeck,
+  updateDeck,
+  deleteDeck,
 } = decksSlice.actions;
 
 export default decksSlice.reducer;

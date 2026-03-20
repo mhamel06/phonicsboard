@@ -65,6 +65,17 @@ const playlistsSlice = createSlice({
       if (!state.activePlaylistState) return;
       state.activePlaylistState = toggleFocusMode(state.activePlaylistState);
     },
+
+    addPlaylist(state, action: PayloadAction<Playlist>) {
+      state.playlists.push(action.payload);
+    },
+
+    updatePlaylist(state, action: PayloadAction<Playlist>) {
+      const index = state.playlists.findIndex((p) => p.id === action.payload.id);
+      if (index !== -1) {
+        state.playlists[index] = action.payload;
+      }
+    },
   },
 });
 
@@ -75,6 +86,8 @@ export const {
   previousWordAction,
   goToWordAction,
   toggleFocusModeAction,
+  addPlaylist,
+  updatePlaylist,
 } = playlistsSlice.actions;
 
 export default playlistsSlice.reducer;
