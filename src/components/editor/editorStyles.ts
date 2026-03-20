@@ -37,7 +37,11 @@ export interface TileGroup {
   graphemes: import('@/engine/types').Grapheme[];
 }
 
-/** Groups graphemes by type in canonical order, skipping empty groups */
+/**
+ * Groups graphemes by type in canonical order, skipping empty groups.
+ * If all graphemes share the same type (common with custom decks),
+ * returns a single group with no label to avoid a misleading heading.
+ */
 export function groupByType(graphemes: import('@/engine/types').Grapheme[]): TileGroup[] {
   const map = new Map<GraphemeType, import('@/engine/types').Grapheme[]>();
   for (const g of graphemes) {
@@ -45,6 +49,13 @@ export function groupByType(graphemes: import('@/engine/types').Grapheme[]): Til
     if (existing) existing.push(g);
     else map.set(g.type, [g]);
   }
+
+  // If every grapheme has the same type, skip the sub-group label
+  if (map.size === 1) {
+    const [type, items] = [...map.entries()][0];
+    return [{ type, label: '', graphemes: items }];
+  }
+
   const groups: TileGroup[] = [];
   for (const type of TYPE_ORDER) {
     const items = map.get(type);

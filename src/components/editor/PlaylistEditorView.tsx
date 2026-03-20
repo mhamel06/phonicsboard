@@ -18,7 +18,7 @@ import {
 import { Feather } from '@expo/vector-icons';
 
 import type { Deck, Playlist, PlaylistWord } from '@/engine/types';
-import { APP_COLORS, TILE_COLORS } from '@/utils/colors';
+import { APP_COLORS, TILE_COLORS, TILE_COLOR_HEX } from '@/utils/colors';
 import WordRow from './WordRow';
 import { groupByType, styles } from './editorStyles';
 
@@ -299,8 +299,8 @@ export default function PlaylistEditorView({
               >
                 {columnGroups[colIdx].map((group, groupIdx) => (
                   <View key={`${col.id}-${group.type}`}>
-                    {groupIdx > 0 && <View style={styles.groupSeparator} />}
-                    <Text style={styles.groupLabel}>{group.label}</Text>
+                    {groupIdx > 0 && group.label !== '' && <View style={styles.groupSeparator} />}
+                    {group.label !== '' && <Text style={styles.groupLabel}>{group.label}</Text>}
 
                     <View style={styles.tileGrid}>
                     {group.graphemes.map((grapheme) => {
@@ -313,7 +313,7 @@ export default function PlaylistEditorView({
                           onPress={() => handleTileTap(grapheme.text, col.position)}
                           style={({ pressed }) => [
                             styles.refTile,
-                            { backgroundColor: TILE_COLORS[grapheme.type] ?? TILE_COLORS.blank },
+                            { backgroundColor: TILE_COLOR_HEX?.[grapheme.color] ?? TILE_COLORS[grapheme.type] ?? TILE_COLORS.blank },
                             isPlaced && styles.refTilePlaced,
                             pressed && styles.refTilePressed,
                           ]}
