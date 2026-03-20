@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 
-import { useAppSelector } from '@/store/store';
+import { useAppDispatch, useAppSelector } from '@/store/store';
+import { addPlaylist } from '@/store/playlistsSlice';
 import PlaylistCard from '@/components/playlist/PlaylistCard';
 import ShareButton from '@/components/common/ShareButton';
 import SearchFilter from '@/components/common/SearchFilter';
@@ -15,6 +16,7 @@ type SubTab = 'library' | 'mine';
 
 export default function PlaylistsScreen() {
   const router = useRouter();
+  const dispatch = useAppDispatch();
   const { playlists } = useAppSelector((state) => state.playlists);
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState<SubTab>('library');
@@ -51,7 +53,7 @@ export default function PlaylistsScreen() {
               </View>
               <Button
                 title="+ New Playlist"
-                onPress={() => {}}
+                onPress={() => router.push('/playlist/editor/new')}
                 variant="primary"
                 size="small"
               />
@@ -111,7 +113,17 @@ export default function PlaylistsScreen() {
               <PlaylistCard
                 playlist={item}
                 onPlay={() => router.push(`/playlist/${item.id}`)}
-                onCopy={() => {}}
+                onCopy={() => {
+                  dispatch(
+                    addPlaylist({
+                      ...item,
+                      id: `playlist-${Date.now()}`,
+                      name: `${item.name} (Copy)`,
+                      isPreset: false,
+                      createdAt: new Date().toISOString(),
+                    }),
+                  );
+                }}
               />
             </View>
             <View style={styles.shareButtonContainer}>
@@ -128,7 +140,7 @@ export default function PlaylistsScreen() {
               title="No Custom Playlists"
               message="Create your own playlists to practice specific word sets with your students."
               actionLabel="Create Playlist"
-              onAction={() => {}}
+              onAction={() => router.push('/playlist/editor/new')}
             />
           ) : null
         }

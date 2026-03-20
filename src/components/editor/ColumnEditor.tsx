@@ -9,7 +9,7 @@ import React from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 
-import type { DeckColumn, TileColor } from '@/engine/types';
+import type { DeckColumn } from '@/engine/types';
 import { APP_COLORS } from '@/utils/colors';
 import TileEditor from './TileEditor';
 
@@ -31,7 +31,7 @@ export interface ColumnEditorProps {
   /** Called when the entire column is deleted */
   onDeleteColumn: () => void;
   /** Called when a tile signals a color change */
-  onTileColorChange?: (graphemeId: string, color: TileColor) => void;
+  onTileColorChange?: (graphemeId: string) => void;
   /** ID of the currently selected tile (for color palette interaction) */
   selectedTileId?: string | null;
   /** Called when a tile is selected */
@@ -105,7 +105,7 @@ export default function ColumnEditor({
               grapheme={grapheme}
               onTextChange={(text) => onUpdateTile(grapheme.id, text)}
               onDelete={() => onDeleteTile(grapheme.id)}
-              onColorChange={(color) => onTileColorChange?.(grapheme.id, color)}
+              onColorChange={() => onTileColorChange?.(grapheme.id)}
               isSelected={selectedTileId === grapheme.id}
             />
           </Pressable>

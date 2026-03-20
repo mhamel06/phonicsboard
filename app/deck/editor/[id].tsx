@@ -122,7 +122,11 @@ export default function DeckEditorScreen() {
   }, []);
 
   const handleCreationCancel = useCallback(() => {
-    router.back();
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace('/');
+    }
   }, [router]);
 
   const handleSave = useCallback(
@@ -132,13 +136,21 @@ export default function DeckEditorScreen() {
       } else {
         dispatch(updateDeck(deck));
       }
-      router.back();
+      if (router.canGoBack()) {
+        router.back();
+      } else {
+        router.replace('/');
+      }
     },
     [isNew, newDeck, dispatch, router],
   );
 
   const handleCancel = useCallback(() => {
-    router.back();
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace('/');
+    }
   }, [router]);
 
   // Show creation dialog for new decks

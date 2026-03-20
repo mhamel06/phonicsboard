@@ -41,7 +41,7 @@ export default function DecksScreen() {
               </View>
               <Button
                 title="+ New Deck"
-                onPress={() => {}}
+                onPress={() => router.push('/deck/editor/new')}
                 variant="primary"
                 size="small"
               />
