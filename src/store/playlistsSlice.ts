@@ -76,6 +76,14 @@ const playlistsSlice = createSlice({
         state.playlists[index] = action.payload;
       }
     },
+
+    deletePlaylist(state, action: PayloadAction<string>) {
+      state.playlists = state.playlists.filter((p) => p.id !== action.payload);
+      // Clear active state if the deleted playlist was active
+      if (state.activePlaylistState?.playlistId === action.payload) {
+        state.activePlaylistState = null;
+      }
+    },
   },
 });
 
@@ -88,6 +96,7 @@ export const {
   toggleFocusModeAction,
   addPlaylist,
   updatePlaylist,
+  deletePlaylist,
 } = playlistsSlice.actions;
 
 export default playlistsSlice.reducer;

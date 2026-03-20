@@ -8,6 +8,7 @@
 
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Feather } from '@expo/vector-icons';
 
 import type { Playlist } from '@/engine/types';
 import { APP_COLORS } from '@/utils/colors';
@@ -20,6 +21,8 @@ export interface PlaylistCardProps {
   playlist: Playlist;
   onPlay: () => void;
   onCopy: () => void;
+  onEdit?: () => void;
+  onDelete?: () => void;
 }
 
 // ---------------------------------------------------------------------------
@@ -30,6 +33,8 @@ export default function PlaylistCard({
   playlist,
   onPlay,
   onCopy,
+  onEdit,
+  onDelete,
 }: PlaylistCardProps) {
   const wordCount = playlist.words.length;
 
@@ -61,6 +66,21 @@ export default function PlaylistCard({
           <Text style={styles.playButtonText}>Play</Text>
         </Pressable>
 
+        {onEdit && (
+          <Pressable
+            onPress={onEdit}
+            style={({ pressed }) => [
+              styles.iconButton,
+              styles.editButton,
+              pressed ? styles.buttonPressed : undefined,
+            ]}
+            accessibilityRole="button"
+            accessibilityLabel={`Edit ${playlist.name}`}
+          >
+            <Feather name="edit-2" size={16} color={APP_COLORS.textSecondary} />
+          </Pressable>
+        )}
+
         <Pressable
           onPress={onCopy}
           style={({ pressed }) => [
@@ -73,6 +93,21 @@ export default function PlaylistCard({
         >
           <Text style={styles.copyButtonText}>Copy</Text>
         </Pressable>
+
+        {onDelete && (
+          <Pressable
+            onPress={onDelete}
+            style={({ pressed }) => [
+              styles.iconButton,
+              styles.deleteButton,
+              pressed ? styles.buttonPressed : undefined,
+            ]}
+            accessibilityRole="button"
+            accessibilityLabel={`Delete ${playlist.name}`}
+          >
+            <Feather name="trash-2" size={16} color="#DC2626" />
+          </Pressable>
+        )}
       </View>
     </View>
   );
@@ -149,5 +184,18 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
     fontFamily: 'Inter',
+  },
+  iconButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  editButton: {
+    backgroundColor: '#F3F4F6',
+  },
+  deleteButton: {
+    backgroundColor: '#FEE2E2',
   },
 });

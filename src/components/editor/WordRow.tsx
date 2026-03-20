@@ -39,6 +39,8 @@ export interface WordRowProps {
   activePosition?: number;
   /** Called when user taps a slot to make it active */
   onSlotPress?: (position: number) => void;
+  /** Whether this row is the currently active row being edited */
+  isActiveRow?: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -54,6 +56,7 @@ export default function WordRow({
   onGraphemeChange,
   activePosition,
   onSlotPress,
+  isActiveRow,
 }: WordRowProps) {
   // Build array of slot values, padding to columnCount
   const slots: string[] = [];
@@ -62,7 +65,7 @@ export default function WordRow({
   }
 
   return (
-    <View style={styles.row}>
+    <View style={[styles.row, isActiveRow && styles.rowActive]}>
       {/* Reorder arrows */}
       <View style={styles.arrows}>
         <Pressable
@@ -149,11 +152,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     marginVertical: 4,
     marginHorizontal: 16,
+    borderLeftWidth: 3,
+    borderLeftColor: 'transparent',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.06,
     shadowRadius: 3,
     elevation: 2,
+  },
+  rowActive: {
+    borderLeftColor: APP_COLORS.primary,
+    backgroundColor: '#F0FDF4',
   },
   arrows: {
     marginRight: 8,

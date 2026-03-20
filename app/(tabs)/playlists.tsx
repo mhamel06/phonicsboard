@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Alert, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 
 import { useAppDispatch, useAppSelector } from '@/store/store';
-import { addPlaylist } from '@/store/playlistsSlice';
+import { addPlaylist, deletePlaylist } from '@/store/playlistsSlice';
 import PlaylistCard from '@/components/playlist/PlaylistCard';
 import ShareButton from '@/components/common/ShareButton';
 import SearchFilter from '@/components/common/SearchFilter';
@@ -112,6 +112,7 @@ export default function PlaylistsScreen() {
               <PlaylistCard
                 playlist={item}
                 onPlay={() => router.push(`/playlist/${item.id}`)}
+                onEdit={() => router.push(`/playlist/editor/${item.id}`)}
                 onCopy={() => {
                   dispatch(
                     addPlaylist({
@@ -123,6 +124,24 @@ export default function PlaylistsScreen() {
                     }),
                   );
                 }}
+                onDelete={
+                  !item.isPreset
+                    ? () => {
+                        Alert.alert(
+                          'Delete Playlist',
+                          `Are you sure you want to delete "${item.name}"?`,
+                          [
+                            { text: 'Cancel', style: 'cancel' },
+                            {
+                              text: 'Delete',
+                              style: 'destructive',
+                              onPress: () => dispatch(deletePlaylist(item.id)),
+                            },
+                          ],
+                        );
+                      }
+                    : undefined
+                }
               />
             </View>
             <View style={styles.shareButtonContainer}>

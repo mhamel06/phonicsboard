@@ -128,17 +128,10 @@ export default function PlaylistEditorView({
   // --- Deck tile tap → fill active slot -------------------------------------
 
   const handleTileTap = useCallback(
-    (graphemeText: string) => {
-      handleGraphemeChange(activeSlot.wordIndex, activeSlot.position, graphemeText);
-      // Advance to next slot in the same word, or next word's first slot
-      const nextPosition = activeSlot.position + 1;
-      if (nextPosition < columnCount) {
-        setActiveSlot({ wordIndex: activeSlot.wordIndex, position: nextPosition });
-      } else if (activeSlot.wordIndex + 1 < words.length) {
-        setActiveSlot({ wordIndex: activeSlot.wordIndex + 1, position: 0 });
-      }
+    (graphemeText: string, columnIndex: number) => {
+      handleGraphemeChange(activeSlot.wordIndex, columnIndex, graphemeText);
     },
-    [activeSlot, columnCount, words.length, handleGraphemeChange],
+    [activeSlot.wordIndex, handleGraphemeChange],
   );
 
   // --- Save handler ---------------------------------------------------------
@@ -160,6 +153,10 @@ export default function PlaylistEditorView({
     onSave(saved);
   }, [name, words, playlist, linkedDeck.id, onSave]);
 
+  // --- Active word graphemes for deck tile indicators -----------------------
+
+  const activeWordGraphemes = words[activeSlot.wordIndex]?.graphemes ?? [];
+
   // --- Render ---------------------------------------------------------------
 
   const renderWordRow = useCallback(
@@ -173,9 +170,10 @@ export default function PlaylistEditorView({
         onGraphemeChange={(pos, text) => handleGraphemeChange(index, pos, text)}
         activePosition={activeSlot.wordIndex === index ? activeSlot.position : undefined}
         onSlotPress={(pos) => setActiveSlot({ wordIndex: index, position: pos })}
+        isActiveRow={activeSlot.wordIndex === index}
       />
     ),
-    [columnCount, handleDelete, handleMoveUp, handleMoveDown, handleGraphemeChange],
+    [columnCount, activeSlot, handleDelete, handleMoveUp, handleMoveDown, handleGraphemeChange],
   );
 
   return (
@@ -258,24 +256,40 @@ export default function PlaylistEditorView({
           {linkedDeck.columns.map((col) => (
             <View key={col.id} style={styles.deckColumn}>
               <Text style={styles.columnLabel}>Col {col.position + 1}</Text>
-              {col.graphemes.map((grapheme) => (
-                <Pressable
-                  key={grapheme.id}
-                  onPress={() => handleTileTap(grapheme.text)}
-                  style={({ pressed }) => [
-                    styles.refTile,
-                    {
-                      backgroundColor:
-                        TILE_COLORS[grapheme.type] ?? TILE_COLORS.blank,
-                    },
-                    pressed && styles.refTilePressed,
-                  ]}
-                  accessibilityRole="button"
-                  accessibilityLabel={`Tile ${grapheme.text}`}
-                >
-                  <Text style={styles.refTileText}>{grapheme.text}</Text>
-                </Pressable>
-              ))}
+              {col.graphemes.map((grapheme) => {
+                const isPlaced =
+                  activeWordGraphemes[col.position] === grapheme.text &&
+                  grapheme.text.trim().length > 0;
+                return (
+                  <Pressable
+                    key={grapheme.id}
+                    onPress={() => handleTileTap(grapheme.text, col.position)}
+                    style={({ pressed }) => [
+                      styles.refTile,
+                      {
+                        backgroundColor:
+                          TILE_COLORS[grapheme.type] ?? TILE_COLORS.blank,
+                      },
+                      isPlaced && styles.refTilePlaced,
+                      pressed && styles.refTilePressed,
+                    ]}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Tile ${grapheme.text}`}
+                  >
+                    <Text style={[styles.refTileText, isPlaced && styles.refTileTextPlaced]}>
+                      {grapheme.text}
+                    </Text>
+                    {isPlaced && (
+                      <Feather
+                        name="check-circle"
+                        size={12}
+                        color="#FFFFFF"
+                        style={styles.refTileCheck}
+                      />
+                    )}
+                  </Pressable>
+                );
+              })}
             </View>
           ))}
         </ScrollView>
@@ -444,9 +458,22 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     paddingHorizontal: 6,
   },
+  refTilePlaced: {
+    opacity: 0.6,
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
+  },
   refTilePressed: {
     opacity: 0.7,
     transform: [{ scale: 0.95 }],
+  },
+  refTileCheck: {
+    position: 'absolute',
+    top: 2,
+    right: 2,
+  },
+  refTileTextPlaced: {
+    opacity: 0.8,
   },
   refTileText: {
     fontSize: 14,
