@@ -7,7 +7,13 @@
  */
 
 import React, { useCallback } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import {
+  Platform,
+  ScrollView,
+  StyleSheet,
+  View,
+  useWindowDimensions,
+} from 'react-native';
 
 import type { Deck, DeckState, Grapheme } from '@/engine/types';
 import { isVowel } from '@/engine/phonics';
@@ -36,6 +42,8 @@ export interface DeckBoardProps {
   onToggleCollapse?: (columnIndex: number) => void;
   /** Display scale factor for projector/classroom use (default 1.0) */
   scale?: number;
+  /** Override tile layout mode; auto-detected from screen width when omitted */
+  tileLayout?: 'grid' | 'list';
 }
 
 // ---------------------------------------------------------------------------
@@ -48,7 +56,12 @@ export default function DeckBoard({
   onTilePress,
   onToggleCollapse,
   scale = 1.0,
+  tileLayout,
 }: DeckBoardProps) {
+  const { width: windowWidth } = useWindowDimensions();
+  const resolvedTileLayout =
+    tileLayout ??
+    (Platform.OS === 'web' && windowWidth >= 768 ? 'grid' : 'list');
   const handleTilePress = useCallback(
     (columnIndex: number, grapheme: Grapheme) => {
       onTilePress(columnIndex, grapheme);
@@ -77,21 +90,34 @@ export default function DeckBoard({
         ))}
       </View>
 
-      {/* Tile columns — scrollable horizontally for many columns */}
+      {/* Tile columns — flex row on desktop, horizontal scroll on mobile */}
       <ScrollView
-        horizontal
+        horizontal={resolvedTileLayout === 'list'}
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.columnsContent}
+        contentContainerStyle={
+          resolvedTileLayout === 'grid'
+            ? styles.columnsContentGrid
+            : styles.columnsContent
+        }
         style={styles.columnsScroll}
       >
         {deck.columns.map((column, index) => (
-          <TileColumn
+          <View
             key={column.id}
-            column={column}
-            onTilePress={(grapheme) => handleTilePress(index, grapheme)}
-            onCollapse={() => handleToggleCollapse(index)}
-            scale={scale}
-          />
+            style={
+              resolvedTileLayout === 'grid'
+                ? styles.columnWrapperGrid
+                : styles.columnWrapperList
+            }
+          >
+            <TileColumn
+              column={column}
+              onTilePress={(grapheme) => handleTilePress(index, grapheme)}
+              onCollapse={() => handleToggleCollapse(index)}
+              scale={scale}
+              tileLayout={resolvedTileLayout}
+            />
+          </View>
         ))}
       </ScrollView>
     </View>
@@ -125,4 +151,16 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     gap: 4,
   },
+  columnsContentGrid: {
+    flexDirection: 'row',
+    paddingHorizontal: 12,
+    paddingVertical: 16,
+    gap: 8,
+    flexGrow: 1,
+  },
+  columnWrapperGrid: {
+    flex: 1,
+    minWidth: 120,
+  },
+  columnWrapperList: {},
 });

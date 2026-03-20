@@ -1,13 +1,20 @@
 /**
  * TileColumn — a vertical column of clickable grapheme tiles.
  *
- * Renders a column header with a collapse button, followed by
- * tiles laid out in a vertical grid (3 tiles per row). Each tile
- * is colored by its grapheme type via the Tile component.
+ * On desktop/tablet (>= 768px width on web), tiles render in a
+ * flex-wrap grid with fixed-size square tiles (52x48px).
+ * On mobile, tiles render in rows of 3 (full-width stretch).
  */
 
 import React, { useCallback } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import {
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+  useWindowDimensions,
+} from 'react-native';
 import { Feather } from '@expo/vector-icons';
 
 import type { DeckColumn, Grapheme } from '@/engine/types';
@@ -27,14 +34,19 @@ export interface TileColumnProps {
   onCollapse?: () => void;
   /** Display scale factor for projector/classroom use (default 1.0) */
   scale?: number;
+  /** Override tile layout mode; auto-detected from screen width when omitted */
+  tileLayout?: 'grid' | 'list';
 }
 
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
 
-/** Number of tiles per row in the grid layout */
+/** Number of tiles per row in list (mobile) layout */
 const TILES_PER_ROW = 3;
+
+/** Minimum screen width to use grid layout on web */
+const DESKTOP_BREAKPOINT = 768;
 
 // ---------------------------------------------------------------------------
 // Component
@@ -45,7 +57,14 @@ export default function TileColumn({
   onTilePress,
   onCollapse,
   scale = 1.0,
+  tileLayout,
 }: TileColumnProps) {
+  const { width: windowWidth } = useWindowDimensions();
+
+  const isDesktopWeb =
+    Platform.OS === 'web' && windowWidth >= DESKTOP_BREAKPOINT;
+  const layout = tileLayout ?? (isDesktopWeb ? 'grid' : 'list');
+
   const handleTilePress = useCallback(
     (grapheme: Grapheme) => {
       onTilePress(grapheme);
@@ -68,7 +87,47 @@ export default function TileColumn({
     );
   }
 
-  // Chunk graphemes into rows of TILES_PER_ROW
+  // -------------------------------------------------------------------------
+  // Grid layout (desktop/tablet): flex-wrap with fixed-size tiles
+  // -------------------------------------------------------------------------
+  if (layout === 'grid') {
+    return (
+      <View style={styles.container}>
+        {/* Column header */}
+        <View style={styles.header}>
+          <Text style={styles.headerLabel}>{column.position + 1}</Text>
+          {onCollapse && (
+            <Pressable
+              onPress={onCollapse}
+              style={styles.collapseButton}
+              accessibilityRole="button"
+              accessibilityLabel={`Collapse column ${column.position + 1}`}
+            >
+              <Feather name="x" size={14} color={APP_COLORS.textSecondary} />
+            </Pressable>
+          )}
+        </View>
+
+        {/* Flex-wrap tile grid */}
+        <View style={[styles.gridContainer, { gap: 4 * scale }]}>
+          {column.graphemes.map((grapheme) => (
+            <Tile
+              key={grapheme.id}
+              grapheme={grapheme}
+              onPress={() => handleTilePress(grapheme)}
+              size="small"
+              scale={scale}
+              layout="grid"
+            />
+          ))}
+        </View>
+      </View>
+    );
+  }
+
+  // -------------------------------------------------------------------------
+  // List layout (mobile): rows of TILES_PER_ROW, full-width stretch
+  // -------------------------------------------------------------------------
   const rows: Grapheme[][] = [];
   for (let i = 0; i < column.graphemes.length; i += TILES_PER_ROW) {
     rows.push(column.graphemes.slice(i, i + TILES_PER_ROW));
@@ -78,9 +137,7 @@ export default function TileColumn({
     <View style={styles.container}>
       {/* Column header */}
       <View style={styles.header}>
-        <Text style={styles.headerLabel}>
-          {column.position + 1}
-        </Text>
+        <Text style={styles.headerLabel}>{column.position + 1}</Text>
         {onCollapse && (
           <Pressable
             onPress={onCollapse}
@@ -96,7 +153,10 @@ export default function TileColumn({
       {/* Tile grid */}
       <View style={[styles.tileGrid, { gap: 6 * scale }]}>
         {rows.map((row, rowIndex) => (
-          <View key={`row-${rowIndex}`} style={[styles.tileRow, { gap: 6 * scale }]}>
+          <View
+            key={`row-${rowIndex}`}
+            style={[styles.tileRow, { gap: 6 * scale }]}
+          >
             {row.map((grapheme) => (
               <View key={grapheme.id} style={styles.tileWrapper}>
                 <Tile
@@ -104,6 +164,7 @@ export default function TileColumn({
                   onPress={() => handleTilePress(grapheme)}
                   size="small"
                   scale={scale}
+                  layout="list"
                 />
               </View>
             ))}
@@ -180,6 +241,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: '#F3F4F6',
   },
+  // Grid layout (desktop) — flex-wrap row
+  gridContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 4,
+  },
+  // List layout (mobile) — full-width rows
   tileGrid: {
     gap: 6,
   },

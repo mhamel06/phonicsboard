@@ -274,6 +274,7 @@ export default function PlaylistEditorView({
                     {groupIdx > 0 && <View style={styles.groupSeparator} />}
                     <Text style={styles.groupLabel}>{group.label}</Text>
 
+                    <View style={styles.tileGrid}>
                     {group.graphemes.map((grapheme) => {
                       const isPlaced =
                         activeWordGraphemes[col.position] === grapheme.text &&
@@ -308,6 +309,7 @@ export default function PlaylistEditorView({
                         </Pressable>
                       );
                     })}
+                    </View>
                   </View>
                 ))}
               </ScrollView>

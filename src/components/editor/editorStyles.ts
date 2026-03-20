@@ -170,7 +170,10 @@ export const styles = StyleSheet.create({
     borderBottomLeftRadius: 8, borderBottomRightRadius: 8,
   },
   columnScrollContent: {
-    paddingVertical: 4, paddingHorizontal: 4, gap: 4,
+    paddingVertical: 4, paddingHorizontal: 4,
+  },
+  tileGrid: {
+    flexDirection: 'row', flexWrap: 'wrap', gap: 4,
   },
 
   // Sub-group separators
@@ -186,9 +189,8 @@ export const styles = StyleSheet.create({
 
   // Tiles
   refTile: {
-    minHeight: 34, borderRadius: 8,
+    width: 48, height: 44, borderRadius: 8,
     alignItems: 'center', justifyContent: 'center',
-    paddingVertical: 4, paddingHorizontal: 4, marginBottom: 3,
   },
   refTilePlaced: {
     opacity: 0.6, borderWidth: 2, borderColor: '#FFFFFF',

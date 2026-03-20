@@ -26,6 +26,8 @@ export interface TileProps {
   isSelected?: boolean;
   /** Display scale factor for projector/classroom use (default 1.0) */
   scale?: number;
+  /** Layout mode: 'grid' uses fixed square sizing, 'list' (default) stretches full width */
+  layout?: 'grid' | 'list';
 }
 
 // ---------------------------------------------------------------------------
@@ -45,12 +47,17 @@ const SIZE_MAP: Record<
 // Component
 // ---------------------------------------------------------------------------
 
+/** Fixed dimensions for grid layout mode (roughly square tiles) */
+const GRID_TILE_WIDTH = 52;
+const GRID_TILE_HEIGHT = 48;
+
 export default function Tile({
   grapheme,
   onPress,
   size = 'medium',
   isSelected = false,
   scale = 1.0,
+  layout = 'list',
 }: TileProps) {
   const dimensions = SIZE_MAP[size];
   const bgColor = getTileColor(grapheme.type);
@@ -62,15 +69,28 @@ export default function Tile({
   const scaledFontSize = dimensions.fontSize * scale;
   const scaledBorderRadius = 10 * scale;
 
-  const containerStyle: ViewStyle = {
-    minWidth: scaledMinSize,
-    minHeight: scaledMinSize,
-    paddingHorizontal: scaledPaddingH,
-    paddingVertical: scaledPaddingV,
-    backgroundColor: bgColor,
-    borderWidth: isSelected ? 3 : 0,
-    borderColor: isSelected ? '#264653' : 'transparent',
-  };
+  const containerStyle: ViewStyle =
+    layout === 'grid'
+      ? {
+          width: GRID_TILE_WIDTH * scale,
+          height: GRID_TILE_HEIGHT * scale,
+          minWidth: 44,
+          minHeight: 44,
+          backgroundColor: bgColor,
+          borderWidth: isSelected ? 3 : 0,
+          borderColor: isSelected ? '#264653' : 'transparent',
+        }
+      : {
+          minWidth: scaledMinSize,
+          minHeight: scaledMinSize,
+          paddingHorizontal: scaledPaddingH,
+          paddingVertical: scaledPaddingV,
+          backgroundColor: bgColor,
+          borderWidth: isSelected ? 3 : 0,
+          borderColor: isSelected ? '#264653' : 'transparent',
+        };
+
+  const gridFontSize = layout === 'grid' ? 14 * scale : scaledFontSize;
 
   return (
     <Pressable
@@ -87,7 +107,7 @@ export default function Tile({
       accessibilityState={{ selected: isSelected }}
     >
       <Text
-        style={[styles.label, { fontSize: scaledFontSize }]}
+        style={[styles.label, { fontSize: gridFontSize }]}
         numberOfLines={1}
       >
         {grapheme.text}
