@@ -121,10 +121,11 @@ export default function PlaylistEditorView({
   }, []);
 
   const handleAddWord = useCallback(() => {
-    setWords((prev) => [
-      ...prev,
-      createEmptyWord(prev.length, columnCount),
-    ]);
+    setWords((prev) => {
+      const newWords = [...prev, createEmptyWord(prev.length, columnCount)];
+      setActiveSlot({ wordIndex: newWords.length - 1, position: 0 });
+      return newWords;
+    });
   }, [columnCount]);
 
   // --- Deck tile tap --------------------------------------------------------
