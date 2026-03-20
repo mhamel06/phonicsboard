@@ -12,27 +12,28 @@ function g(
   return { id: `cmb-c${col}-${slug}`, text, type, color };
 }
 
-// --- Column 1: consonants + blends ---
+// --- Column 1: consonants + blends + digraphs ---
 
-const col1Texts = [
-  'b', 'bl', 'br', 'c', 'cl', 'cr', 'd', 'dr',
-  'f', 'fl', 'fr', 'g', 'gl', 'gr', 'h', 'j',
-  'k', 'l', 'm', 'n', 'p', 'pl', 'pr', 'r',
-  's', 'sc', 'scr', 'sk', 'sl', 'sm', 'sn', 'sp',
-  'st', 'str', 'sw', 't', 'tr', 'tw', 'v', 'w', 'y', 'z',
+const col1Consonants = [
+  'b', 'c', 'd', 'f', 'g', 'h', 'j', 'k',
+  'l', 'm', 'n', 'p', 'r', 's', 't', 'v', 'w', 'y', 'z',
 ];
 
-function col1Type(t: string): GraphemeType {
-  return t.length > 1 ? 'blend' : 'consonant';
-}
+const col1Blends = [
+  'bl', 'br', 'cl', 'cr', 'dr', 'fl', 'fr', 'gl',
+  'gr', 'pl', 'pr', 'sc', 'scr', 'sk', 'sl', 'sm',
+  'sn', 'sp', 'st', 'str', 'sw', 'tr', 'tw',
+];
 
-function col1Color(t: string): TileColor {
-  return t.length > 1 ? 'green' : 'pink';
-}
+const col1Digraphs = [
+  'ch', 'gn', 'kn', 'ph', 'qu', 'sh', 'shr', 'th', 'thr', 'wh', 'wr',
+];
 
-const col1Graphemes: Grapheme[] = col1Texts.map((t) =>
-  g(1, t, col1Type(t), col1Color(t)),
-);
+const col1Graphemes: Grapheme[] = [
+  ...col1Consonants.map((t) => g(1, t, 'consonant', 'green')),
+  ...col1Blends.map((t) => g(1, t, 'blend', 'green')),
+  ...col1Digraphs.map((t) => g(1, t, 'digraph', 'pink')),
+];
 
 // --- Column 2: vowels + vowel teams ---
 
@@ -44,27 +45,36 @@ const col2Teams = [
   'oi', 'oo', 'ou', 'ough',
 ];
 
+const col2RControlled = ['ar', 'er', 'ir', 'or', 'ore', 'ur'];
+
 const col2Graphemes: Grapheme[] = [
   ...col2Vowels.map((t) => g(2, t, 'vowel', 'orange')),
   ...col2Teams.map((t) => g(2, t, 'vowel_team', 'orange')),
+  ...col2RControlled.map((t) => g(2, t, 'r_controlled', 'orange')),
 ];
 
-// --- Column 3: final sounds + ending blends ---
+// --- Column 3: final sounds + ending blends + final digraphs ---
 
-const col3Texts = [
-  'b', 'c', 'ct', 'd', 'f', 'ff', 'ft', 'g',
-  'k', 'l', 'll', 'lb', 'ld', 'lf', 'lk', 'lp',
-  'lt', 'm', 'mp', 'n', 'nd', 'nt', 'p', 'pt',
-  'r', 's', 'ss', 'sk', 'sp', 'st', 't', 'y',
+const col3Consonants = [
+  'b', 'c', 'd', 'f', 'g', 'k', 'l', 'm',
+  'n', 'p', 'r', 's', 't', 'y',
 ];
 
-function col3Type(t: string): GraphemeType {
-  return t.length > 1 ? 'blend' : 'consonant';
-}
+const col3Blends = [
+  'ct', 'ff', 'ft', 'll', 'lb', 'ld', 'lf', 'lk',
+  'lp', 'lt', 'mp', 'nd', 'nt', 'pt', 'ss', 'sk',
+  'sp', 'st',
+];
 
-const col3Graphemes: Grapheme[] = col3Texts.map((t) =>
-  g(3, t, col3Type(t), 'pink'),
-);
+const col3Digraphs = [
+  'ch', 'ck', 'dge', 'mb', 'nch', 'ng', 'tch', 'th',
+];
+
+const col3Graphemes: Grapheme[] = [
+  ...col3Consonants.map((t) => g(3, t, 'consonant', 'teal')),
+  ...col3Blends.map((t) => g(3, t, 'blend', 'teal')),
+  ...col3Digraphs.map((t) => g(3, t, 'digraph', 'pink')),
+];
 
 // --- Column 4: silent e ---
 

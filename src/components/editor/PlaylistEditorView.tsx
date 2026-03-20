@@ -1,17 +1,16 @@
 /**
  * Full playlist editor layout.
  *
- * Provides an editable name, word chain list via WordRow components,
- * an add-word button, and a reference section showing the linked
- * deck's tile columns for quick grapheme entry.
+ * Vertical split: word chain on top (40%), deck tile columns on bottom (60%).
+ * Each deck column is independently scrollable and aligned with the word row
+ * slots above. Tiles are grouped by phonics sub-category with separators.
  */
 
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import {
   FlatList,
   Pressable,
   ScrollView,
-  StyleSheet,
   Text,
   TextInput,
   View,
@@ -21,19 +20,16 @@ import { Feather } from '@expo/vector-icons';
 import type { Deck, Playlist, PlaylistWord } from '@/engine/types';
 import { APP_COLORS, TILE_COLORS } from '@/utils/colors';
 import WordRow from './WordRow';
+import { groupByType, styles } from './editorStyles';
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
 export interface PlaylistEditorViewProps {
-  /** The playlist being edited, null for brand-new */
   playlist: Playlist | null;
-  /** The deck this playlist is linked to */
   linkedDeck: Deck;
-  /** Called when the user saves the playlist */
   onSave: (playlist: Playlist) => void;
-  /** Called when the user cancels editing */
   onCancel: () => void;
 }
 
@@ -70,6 +66,12 @@ export default function PlaylistEditorView({
     wordIndex: number;
     position: number;
   }>({ wordIndex: 0, position: 0 });
+
+  // Pre-compute grouped tiles per column
+  const columnGroups = useMemo(
+    () => linkedDeck.columns.map((col) => groupByType(col.graphemes)),
+    [linkedDeck.columns],
+  );
 
   // --- Word mutations -------------------------------------------------------
 
@@ -125,7 +127,7 @@ export default function PlaylistEditorView({
     ]);
   }, [columnCount]);
 
-  // --- Deck tile tap → fill active slot -------------------------------------
+  // --- Deck tile tap --------------------------------------------------------
 
   const handleTileTap = useCallback(
     (graphemeText: string, columnIndex: number) => {
@@ -140,7 +142,6 @@ export default function PlaylistEditorView({
     const trimmedWords = words.filter((w) =>
       w.graphemes.some((g) => g.trim().length > 0),
     );
-
     const saved: Playlist = {
       id: playlist?.id ?? `playlist-${Date.now()}`,
       name: name.trim() || 'Untitled Playlist',
@@ -149,15 +150,14 @@ export default function PlaylistEditorView({
       isPreset: false,
       createdAt: playlist?.createdAt ?? new Date().toISOString(),
     };
-
     onSave(saved);
   }, [name, words, playlist, linkedDeck.id, onSave]);
 
-  // --- Active word graphemes for deck tile indicators -----------------------
+  // --- Active word graphemes for placed indicator ---------------------------
 
   const activeWordGraphemes = words[activeSlot.wordIndex]?.graphemes ?? [];
 
-  // --- Render ---------------------------------------------------------------
+  // --- Render word row ------------------------------------------------------
 
   const renderWordRow = useCallback(
     ({ item, index }: { item: PlaylistWord; index: number }) => (
@@ -176,9 +176,11 @@ export default function PlaylistEditorView({
     [columnCount, activeSlot, handleDelete, handleMoveUp, handleMoveDown, handleGraphemeChange],
   );
 
+  // --- Render ---------------------------------------------------------------
+
   return (
     <View style={styles.container}>
-      {/* Header: name + actions */}
+      {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerLeft}>
           <TextInput
@@ -189,16 +191,13 @@ export default function PlaylistEditorView({
             placeholderTextColor={APP_COLORS.textSecondary}
             accessibilityLabel="Playlist name"
           />
-          <Text style={styles.deckLink}>
-            Linked to: {linkedDeck.name}
-          </Text>
+          <Text style={styles.deckLink}>Linked to: {linkedDeck.name}</Text>
         </View>
         <View style={styles.headerActions}>
           <Pressable
             onPress={onCancel}
             style={({ pressed }) => [
-              styles.headerButton,
-              styles.cancelButton,
+              styles.headerButton, styles.cancelButton,
               pressed && styles.buttonPressed,
             ]}
             accessibilityRole="button"
@@ -209,8 +208,7 @@ export default function PlaylistEditorView({
           <Pressable
             onPress={handleSave}
             style={({ pressed }) => [
-              styles.headerButton,
-              styles.saveButton,
+              styles.headerButton, styles.saveButton,
               pressed && styles.buttonPressed,
             ]}
             accessibilityRole="button"
@@ -222,7 +220,7 @@ export default function PlaylistEditorView({
         </View>
       </View>
 
-      {/* Word chain list — takes remaining space above deck tiles */}
+      {/* Word chain -- top 40% */}
       <View style={styles.wordSection}>
         <Text style={styles.sectionLabel}>WORD CHAIN</Text>
         <FlatList
@@ -247,239 +245,75 @@ export default function PlaylistEditorView({
         />
       </View>
 
-      {/* Deck tile reference — fixed height scrollable panel at bottom */}
+      {/* Deck tile reference -- bottom 60% */}
       <View style={styles.deckReference}>
         <Text style={styles.deckRefTitle}>
           DECK TILES (tap to fill active slot)
         </Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.deckColumnsScroll}>
-          {linkedDeck.columns.map((col) => (
+
+        <View style={styles.columnsRow}>
+          {linkedDeck.columns.map((col, colIdx) => (
             <View key={col.id} style={styles.deckColumn}>
-              <Text style={styles.columnLabel}>Col {col.position + 1}</Text>
-              {col.graphemes.map((grapheme) => {
-                const isPlaced =
-                  activeWordGraphemes[col.position] === grapheme.text &&
-                  grapheme.text.trim().length > 0;
-                return (
-                  <Pressable
-                    key={grapheme.id}
-                    onPress={() => handleTileTap(grapheme.text, col.position)}
-                    style={({ pressed }) => [
-                      styles.refTile,
-                      {
-                        backgroundColor:
-                          TILE_COLORS[grapheme.type] ?? TILE_COLORS.blank,
-                      },
-                      isPlaced && styles.refTilePlaced,
-                      pressed && styles.refTilePressed,
-                    ]}
-                    accessibilityRole="button"
-                    accessibilityLabel={`Tile ${grapheme.text}`}
-                  >
-                    <Text style={[styles.refTileText, isPlaced && styles.refTileTextPlaced]}>
-                      {grapheme.text}
-                    </Text>
-                    {isPlaced && (
-                      <Feather
-                        name="check-circle"
-                        size={12}
-                        color="#FFFFFF"
-                        style={styles.refTileCheck}
-                      />
-                    )}
-                  </Pressable>
-                );
-              })}
+              {/* Sticky column header */}
+              <View style={styles.columnHeader}>
+                <Text style={styles.columnHeaderText}>
+                  Col {col.position + 1}
+                </Text>
+              </View>
+
+              {/* Independent vertical scroll */}
+              <ScrollView
+                nestedScrollEnabled
+                showsVerticalScrollIndicator
+                style={styles.columnScroll}
+                contentContainerStyle={styles.columnScrollContent}
+              >
+                {columnGroups[colIdx].map((group, groupIdx) => (
+                  <View key={`${col.id}-${group.type}`}>
+                    {groupIdx > 0 && <View style={styles.groupSeparator} />}
+                    <Text style={styles.groupLabel}>{group.label}</Text>
+
+                    {group.graphemes.map((grapheme) => {
+                      const isPlaced =
+                        activeWordGraphemes[col.position] === grapheme.text &&
+                        grapheme.text.trim().length > 0;
+                      return (
+                        <Pressable
+                          key={grapheme.id}
+                          onPress={() => handleTileTap(grapheme.text, col.position)}
+                          style={({ pressed }) => [
+                            styles.refTile,
+                            { backgroundColor: TILE_COLORS[grapheme.type] ?? TILE_COLORS.blank },
+                            isPlaced && styles.refTilePlaced,
+                            pressed && styles.refTilePressed,
+                          ]}
+                          accessibilityRole="button"
+                          accessibilityLabel={`Tile ${grapheme.text}`}
+                        >
+                          <Text style={[
+                            styles.refTileText,
+                            isPlaced && styles.refTileTextPlaced,
+                          ]}>
+                            {grapheme.text}
+                          </Text>
+                          {isPlaced && (
+                            <Feather
+                              name="check-circle"
+                              size={12}
+                              color="#FFFFFF"
+                              style={styles.refTileCheck}
+                            />
+                          )}
+                        </Pressable>
+                      );
+                    })}
+                  </View>
+                ))}
+              </ScrollView>
             </View>
           ))}
-        </ScrollView>
+        </View>
       </View>
     </View>
   );
 }
-
-// ---------------------------------------------------------------------------
-// Styles
-// ---------------------------------------------------------------------------
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: APP_COLORS.background,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
-    backgroundColor: APP_COLORS.surface,
-  },
-  headerLeft: {
-    flex: 1,
-    marginRight: 12,
-  },
-  nameInput: {
-    fontSize: 22,
-    fontWeight: '700',
-    fontFamily: 'Nunito',
-    color: APP_COLORS.textPrimary,
-    borderBottomWidth: 2,
-    borderBottomColor: APP_COLORS.primary,
-    paddingBottom: 4,
-  },
-  deckLink: {
-    fontSize: 13,
-    color: APP_COLORS.textSecondary,
-    fontFamily: 'Inter',
-    marginTop: 6,
-  },
-  headerActions: {
-    flexDirection: 'row',
-    gap: 8,
-    paddingTop: 4,
-  },
-  headerButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 10,
-  },
-  cancelButton: {
-    backgroundColor: '#F3F4F6',
-  },
-  cancelText: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: APP_COLORS.textSecondary,
-    fontFamily: 'Inter',
-  },
-  saveButton: {
-    backgroundColor: APP_COLORS.primary,
-  },
-  saveIcon: {
-    marginRight: 4,
-  },
-  saveText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#FFFFFF',
-    fontFamily: 'Inter',
-  },
-  buttonPressed: {
-    opacity: 0.8,
-    transform: [{ scale: 0.97 }],
-  },
-  wordSection: {
-    flex: 1,
-    minHeight: 180,
-  },
-  sectionLabel: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: APP_COLORS.textSecondary,
-    fontFamily: 'Inter',
-    letterSpacing: 0.5,
-    paddingHorizontal: 16,
-    paddingTop: 12,
-    paddingBottom: 4,
-  },
-  listContent: {
-    paddingTop: 4,
-    paddingBottom: 8,
-  },
-  addButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginHorizontal: 16,
-    marginTop: 8,
-    marginBottom: 16,
-    paddingVertical: 12,
-    borderWidth: 2,
-    borderColor: APP_COLORS.primary,
-    borderStyle: 'dashed',
-    borderRadius: 12,
-    gap: 6,
-  },
-  addButtonPressed: {
-    backgroundColor: '#F0FDF4',
-  },
-  addButtonText: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: APP_COLORS.primary,
-    fontFamily: 'Inter',
-  },
-  deckReference: {
-    height: 280,
-    borderTopWidth: 1,
-    borderTopColor: '#E5E7EB',
-    backgroundColor: APP_COLORS.surface,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-  },
-  deckRefTitle: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: APP_COLORS.textSecondary,
-    fontFamily: 'Inter',
-    marginBottom: 10,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  deckColumnsScroll: {
-    flexDirection: 'row',
-    gap: 12,
-    paddingBottom: 12,
-  },
-  deckColumn: {
-    width: 100,
-    alignItems: 'center',
-    gap: 6,
-  },
-  columnLabel: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: APP_COLORS.textSecondary,
-    fontFamily: 'Inter',
-    marginBottom: 2,
-  },
-  refTile: {
-    width: '100%',
-    minHeight: 36,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 4,
-    paddingHorizontal: 6,
-  },
-  refTilePlaced: {
-    opacity: 0.6,
-    borderWidth: 2,
-    borderColor: '#FFFFFF',
-  },
-  refTilePressed: {
-    opacity: 0.7,
-    transform: [{ scale: 0.95 }],
-  },
-  refTileCheck: {
-    position: 'absolute',
-    top: 2,
-    right: 2,
-  },
-  refTileTextPlaced: {
-    opacity: 0.8,
-  },
-  refTileText: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#FFFFFF',
-    fontFamily: 'Nunito',
-    textAlign: 'center',
-  },
-});
