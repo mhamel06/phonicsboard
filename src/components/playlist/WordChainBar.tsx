@@ -14,7 +14,7 @@ import {
   View,
 } from 'react-native';
 
-import type { Playlist } from '@/engine/types';
+import type { Playlist, PlaylistWord } from '@/engine/types';
 import { APP_COLORS } from '@/utils/colors';
 
 // ---------------------------------------------------------------------------
@@ -31,9 +31,15 @@ export interface WordChainBarProps {
 // Helpers
 // ---------------------------------------------------------------------------
 
-/** Joins grapheme texts into a readable word string. */
-function wordLabel(graphemes: string[]): string {
-  return graphemes.join('');
+/** Joins only active/filled grapheme texts into a readable word string. */
+function wordLabel(word: PlaylistWord): string {
+  const activeColumns = word.activeColumns;
+  return word.graphemes
+    .filter((text, i) => {
+      if (activeColumns && !activeColumns.includes(i)) return false;
+      return text.trim().length > 0;
+    })
+    .join('');
 }
 
 // Approximate width of each word chip for auto-scroll calculation
@@ -83,7 +89,7 @@ export default function WordChainBar({
                 pressed ? styles.chipPressed : undefined,
               ]}
               accessibilityRole="button"
-              accessibilityLabel={`Go to word ${wordLabel(word.graphemes)}`}
+              accessibilityLabel={`Go to word ${wordLabel(word)}`}
               accessibilityState={{ selected: isCurrent }}
             >
               <Text
@@ -92,7 +98,7 @@ export default function WordChainBar({
                   isCurrent && styles.chipTextActive,
                 ]}
               >
-                {wordLabel(word.graphemes)}
+                {wordLabel(word)}
               </Text>
             </Pressable>
           );

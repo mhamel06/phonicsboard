@@ -90,6 +90,8 @@ export interface PlaylistWord {
   graphemes: string[];
   /** Index position in the playlist chain */
   position: number;
+  /** Which column positions are visible (if undefined, all are visible) */
+  activeColumns?: number[];
 }
 
 /** Runtime state for an active playlist session */

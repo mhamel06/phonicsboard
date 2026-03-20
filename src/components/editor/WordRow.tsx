@@ -1,11 +1,13 @@
 /**
  * Single word row in the playlist editor.
  *
- * Renders a horizontal row of text inputs (one per column/position),
+ * Renders a horizontal row of text inputs (one per visible column/position),
  * reorder arrows on the left, and a delete button on the right.
+ * Each slot has a small X button above it to hide that column for this word.
+ * A "+" button at the end lets the user restore hidden columns.
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Pressable,
   StyleSheet,
@@ -41,6 +43,8 @@ export interface WordRowProps {
   onSlotPress?: (position: number) => void;
   /** Whether this row is the currently active row being edited */
   isActiveRow?: boolean;
+  /** Called when a column is toggled on/off for this word */
+  onToggleColumn?: (position: number) => void;
 }
 
 // ---------------------------------------------------------------------------
@@ -57,12 +61,14 @@ export default function WordRow({
   activePosition,
   onSlotPress,
   isActiveRow,
+  onToggleColumn,
 }: WordRowProps) {
-  // Build array of slot values, padding to columnCount
-  const slots: string[] = [];
-  for (let i = 0; i < columnCount; i++) {
-    slots.push(word.graphemes[i] ?? '');
-  }
+  const [showRestore, setShowRestore] = useState(false);
+
+  // Determine which columns are active
+  const allColumns = Array.from({ length: columnCount }, (_, i) => i);
+  const activeColumns = word.activeColumns ?? allColumns;
+  const hiddenColumns = allColumns.filter((i) => !activeColumns.includes(i));
 
   return (
     <View style={[styles.row, isActiveRow && styles.rowActive]}>
@@ -95,31 +101,92 @@ export default function WordRow({
       {/* Word number */}
       <Text style={styles.wordIndex}>{word.position + 1}.</Text>
 
-      {/* Grapheme input slots */}
+      {/* Grapheme input slots — only visible columns */}
       <View style={styles.slots}>
-        {slots.map((value, index) => (
-          <Pressable
-            key={`slot-${index}`}
-            onPress={() => onSlotPress?.(index)}
-            style={styles.slotWrapper}
-          >
-            <TextInput
-              style={[
-                styles.slotInput,
-                activePosition === index && styles.slotInputActive,
+        {activeColumns.map((colIndex) => {
+          const value = word.graphemes[colIndex] ?? '';
+          return (
+            <View key={`slot-${colIndex}`} style={styles.slotColumn}>
+              {/* Hide column button */}
+              {onToggleColumn && activeColumns.length > 1 && (
+                <Pressable
+                  onPress={() => onToggleColumn(colIndex)}
+                  style={({ pressed }) => [
+                    styles.hideColumnButton,
+                    pressed && styles.hideColumnPressed,
+                  ]}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Hide column ${colIndex + 1}`}
+                >
+                  <Feather name="x" size={12} color={APP_COLORS.textSecondary} />
+                </Pressable>
+              )}
+              <Pressable
+                onPress={() => onSlotPress?.(colIndex)}
+                style={styles.slotWrapper}
+              >
+                <TextInput
+                  style={[
+                    styles.slotInput,
+                    activePosition === colIndex && styles.slotInputActive,
+                  ]}
+                  value={value}
+                  onChangeText={(text) => onGraphemeChange(colIndex, text)}
+                  onFocus={() => onSlotPress?.(colIndex)}
+                  placeholder="-"
+                  placeholderTextColor="#D1D5DB"
+                  maxLength={5}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  accessibilityLabel={`Grapheme position ${colIndex + 1}`}
+                />
+              </Pressable>
+            </View>
+          );
+        })}
+
+        {/* Restore hidden columns button */}
+        {hiddenColumns.length > 0 && onToggleColumn && (
+          <View style={styles.restoreContainer}>
+            <Pressable
+              onPress={() => setShowRestore((prev) => !prev)}
+              style={({ pressed }) => [
+                styles.restoreButton,
+                pressed && styles.restoreButtonPressed,
               ]}
-              value={value}
-              onChangeText={(text) => onGraphemeChange(index, text)}
-              onFocus={() => onSlotPress?.(index)}
-              placeholder="-"
-              placeholderTextColor="#D1D5DB"
-              maxLength={5}
-              autoCapitalize="none"
-              autoCorrect={false}
-              accessibilityLabel={`Grapheme position ${index + 1}`}
-            />
-          </Pressable>
-        ))}
+              accessibilityRole="button"
+              accessibilityLabel="Restore hidden columns"
+            >
+              <Feather name="plus" size={16} color={APP_COLORS.primary} />
+            </Pressable>
+
+            {showRestore && (
+              <View style={styles.restoreDropdown}>
+                {hiddenColumns.map((colIndex) => (
+                  <Pressable
+                    key={`restore-${colIndex}`}
+                    onPress={() => {
+                      onToggleColumn(colIndex);
+                      if (hiddenColumns.length <= 1) {
+                        setShowRestore(false);
+                      }
+                    }}
+                    style={({ pressed }) => [
+                      styles.restoreItem,
+                      pressed && styles.restoreItemPressed,
+                    ]}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Restore column ${colIndex + 1}`}
+                  >
+                    <Text style={styles.restoreItemText}>
+                      Col {colIndex + 1}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
+            )}
+          </View>
+        )}
       </View>
 
       {/* Delete button */}
@@ -187,9 +254,14 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     gap: 8,
+    alignItems: 'flex-end',
+  },
+  slotColumn: {
+    flex: 1,
+    alignItems: 'center',
   },
   slotWrapper: {
-    flex: 1,
+    width: '100%',
   },
   slotInput: {
     height: 48,
@@ -209,6 +281,64 @@ const styles = StyleSheet.create({
     borderColor: APP_COLORS.primary,
     borderStyle: 'solid',
     backgroundColor: '#F0FDF4',
+  },
+  hideColumnButton: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: '#F3F4F6',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 4,
+  },
+  hideColumnPressed: {
+    backgroundColor: '#FEE2E2',
+  },
+  restoreContainer: {
+    position: 'relative',
+  },
+  restoreButton: {
+    width: 32,
+    height: 48,
+    borderWidth: 2,
+    borderColor: APP_COLORS.primary,
+    borderStyle: 'dashed',
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#F0FDF4',
+  },
+  restoreButtonPressed: {
+    backgroundColor: '#DEF7EC',
+  },
+  restoreDropdown: {
+    position: 'absolute',
+    top: 52,
+    left: 0,
+    backgroundColor: APP_COLORS.surface,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 4,
+    zIndex: 10,
+    minWidth: 80,
+  },
+  restoreItem: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  restoreItemPressed: {
+    backgroundColor: '#F3F4F6',
+  },
+  restoreItemText: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: APP_COLORS.textPrimary,
+    fontFamily: 'Inter',
   },
   deleteButton: {
     marginLeft: 8,

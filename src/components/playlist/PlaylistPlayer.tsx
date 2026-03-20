@@ -66,7 +66,18 @@ export default function PlaylistPlayer({
   const isFirst = playlistState.currentIndex === 0;
   const isLast = playlistState.currentIndex === playlist.words.length - 1;
 
-  const graphemes = currentWord.graphemes.map((text, i) => textToGrapheme(text, i));
+  // Only show graphemes that are in activeColumns (if defined) AND have non-empty text
+  const activeColumns = currentWord.activeColumns;
+  const filledGraphemes = currentWord.graphemes
+    .map((text, i) => ({ text, index: i }))
+    .filter(({ text, index }) => {
+      // If activeColumns is defined, only include columns in the list
+      if (activeColumns && !activeColumns.includes(index)) return false;
+      // Skip empty graphemes
+      return text.trim().length > 0;
+    });
+
+  const graphemes = filledGraphemes.map(({ text, index }) => textToGrapheme(text, index));
 
   return (
     <View style={styles.container}>

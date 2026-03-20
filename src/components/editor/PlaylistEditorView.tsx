@@ -41,6 +41,7 @@ function createEmptyWord(position: number, columnCount: number): PlaylistWord {
   return {
     graphemes: Array.from({ length: columnCount }, () => ''),
     position,
+    activeColumns: Array.from({ length: columnCount }, (_, i) => i),
   };
 }
 
@@ -120,6 +121,32 @@ export default function PlaylistEditorView({
     });
   }, []);
 
+  const handleToggleColumn = useCallback(
+    (wordIndex: number, columnPosition: number) => {
+      setWords((prev) => {
+        const updated = [...prev];
+        const word = { ...updated[wordIndex] };
+        const allColumns = Array.from({ length: columnCount }, (_, i) => i);
+        const current = word.activeColumns ?? allColumns;
+
+        if (current.includes(columnPosition)) {
+          // Removing column — also clear its grapheme
+          const graphemes = [...word.graphemes];
+          graphemes[columnPosition] = '';
+          word.graphemes = graphemes;
+          word.activeColumns = current.filter((c) => c !== columnPosition);
+        } else {
+          // Restoring column — add back in sorted order
+          word.activeColumns = [...current, columnPosition].sort((a, b) => a - b);
+        }
+
+        updated[wordIndex] = word;
+        return updated;
+      });
+    },
+    [columnCount],
+  );
+
   const handleAddWord = useCallback(() => {
     setWords((prev) => {
       const newWords = [...prev, createEmptyWord(prev.length, columnCount)];
@@ -172,9 +199,10 @@ export default function PlaylistEditorView({
         activePosition={activeSlot.wordIndex === index ? activeSlot.position : undefined}
         onSlotPress={(pos) => setActiveSlot({ wordIndex: index, position: pos })}
         isActiveRow={activeSlot.wordIndex === index}
+        onToggleColumn={(pos) => handleToggleColumn(index, pos)}
       />
     ),
-    [columnCount, activeSlot, handleDelete, handleMoveUp, handleMoveDown, handleGraphemeChange],
+    [columnCount, activeSlot, handleDelete, handleMoveUp, handleMoveDown, handleGraphemeChange, handleToggleColumn],
   );
 
   // --- Render ---------------------------------------------------------------
