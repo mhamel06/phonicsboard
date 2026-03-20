@@ -26,9 +26,8 @@ export default function PlaylistsScreen() {
     p.name.toLowerCase().includes(search.toLowerCase()),
   );
 
-  // For now, all seeded playlists are "library"; custom ones would be "mine"
-  const libraryPlaylists = filtered;
-  const myPlaylists: typeof filtered = [];
+  const libraryPlaylists = filtered.filter((p) => p.isPreset);
+  const myPlaylists = filtered.filter((p) => !p.isPreset);
 
   const displayedPlaylists =
     activeTab === 'library' ? libraryPlaylists : myPlaylists;
