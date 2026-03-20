@@ -35,6 +35,10 @@ export interface WordRowProps {
   onMoveDown: () => void;
   /** Called when a grapheme text is edited at a given position */
   onGraphemeChange: (position: number, text: string) => void;
+  /** Which position is currently active (for highlight) */
+  activePosition?: number;
+  /** Called when user taps a slot to make it active */
+  onSlotPress?: (position: number) => void;
 }
 
 // ---------------------------------------------------------------------------
@@ -48,6 +52,8 @@ export default function WordRow({
   onMoveUp,
   onMoveDown,
   onGraphemeChange,
+  activePosition,
+  onSlotPress,
 }: WordRowProps) {
   // Build array of slot values, padding to columnCount
   const slots: string[] = [];
@@ -89,18 +95,27 @@ export default function WordRow({
       {/* Grapheme input slots */}
       <View style={styles.slots}>
         {slots.map((value, index) => (
-          <TextInput
+          <Pressable
             key={`slot-${index}`}
-            style={styles.slotInput}
-            value={value}
-            onChangeText={(text) => onGraphemeChange(index, text)}
-            placeholder="-"
-            placeholderTextColor="#D1D5DB"
-            maxLength={5}
-            autoCapitalize="none"
-            autoCorrect={false}
-            accessibilityLabel={`Grapheme position ${index + 1}`}
-          />
+            onPress={() => onSlotPress?.(index)}
+            style={styles.slotWrapper}
+          >
+            <TextInput
+              style={[
+                styles.slotInput,
+                activePosition === index && styles.slotInputActive,
+              ]}
+              value={value}
+              onChangeText={(text) => onGraphemeChange(index, text)}
+              onFocus={() => onSlotPress?.(index)}
+              placeholder="-"
+              placeholderTextColor="#D1D5DB"
+              maxLength={5}
+              autoCapitalize="none"
+              autoCorrect={false}
+              accessibilityLabel={`Grapheme position ${index + 1}`}
+            />
+          </Pressable>
         ))}
       </View>
 
@@ -164,8 +179,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 8,
   },
-  slotInput: {
+  slotWrapper: {
     flex: 1,
+  },
+  slotInput: {
     height: 48,
     minWidth: 48,
     borderWidth: 2,
@@ -178,6 +195,11 @@ const styles = StyleSheet.create({
     fontFamily: 'Nunito',
     color: APP_COLORS.textPrimary,
     backgroundColor: '#FAFAFA',
+  },
+  slotInputActive: {
+    borderColor: APP_COLORS.primary,
+    borderStyle: 'solid',
+    backgroundColor: '#F0FDF4',
   },
   deleteButton: {
     marginLeft: 8,

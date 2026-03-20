@@ -68,7 +68,7 @@ export default function PlaylistEditorView({
   const [activeSlot, setActiveSlot] = useState<{
     wordIndex: number;
     position: number;
-  } | null>(null);
+  }>({ wordIndex: 0, position: 0 });
 
   // --- Word mutations -------------------------------------------------------
 
@@ -128,15 +128,16 @@ export default function PlaylistEditorView({
 
   const handleTileTap = useCallback(
     (graphemeText: string) => {
-      if (!activeSlot) return;
       handleGraphemeChange(activeSlot.wordIndex, activeSlot.position, graphemeText);
-      // Advance to next slot in the same word
+      // Advance to next slot in the same word, or next word's first slot
       const nextPosition = activeSlot.position + 1;
       if (nextPosition < columnCount) {
         setActiveSlot({ wordIndex: activeSlot.wordIndex, position: nextPosition });
+      } else if (activeSlot.wordIndex + 1 < words.length) {
+        setActiveSlot({ wordIndex: activeSlot.wordIndex + 1, position: 0 });
       }
     },
-    [activeSlot, columnCount, handleGraphemeChange],
+    [activeSlot, columnCount, words.length, handleGraphemeChange],
   );
 
   // --- Save handler ---------------------------------------------------------
@@ -169,6 +170,8 @@ export default function PlaylistEditorView({
         onMoveUp={() => handleMoveUp(index)}
         onMoveDown={() => handleMoveDown(index)}
         onGraphemeChange={(pos, text) => handleGraphemeChange(index, pos, text)}
+        activePosition={activeSlot.wordIndex === index ? activeSlot.position : undefined}
+        onSlotPress={(pos) => setActiveSlot({ wordIndex: index, position: pos })}
       />
     ),
     [columnCount, handleDelete, handleMoveUp, handleMoveDown, handleGraphemeChange],
