@@ -1,0 +1,175 @@
+import React, { useState } from 'react';
+import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useRouter } from 'expo-router';
+
+import { useAppSelector } from '@/store/store';
+import PlaylistCard from '@/components/playlist/PlaylistCard';
+import SearchFilter from '@/components/common/SearchFilter';
+import Button from '@/components/common/Button';
+import EmptyState from '@/components/common/EmptyState';
+import { APP_COLORS } from '@/utils/colors';
+
+type SubTab = 'library' | 'mine';
+
+export default function PlaylistsScreen() {
+  const router = useRouter();
+  const { playlists } = useAppSelector((state) => state.playlists);
+  const [search, setSearch] = useState('');
+  const [activeTab, setActiveTab] = useState<SubTab>('library');
+
+  const filtered = playlists.filter((p) =>
+    p.name.toLowerCase().includes(search.toLowerCase()),
+  );
+
+  // For now, all seeded playlists are "library"; custom ones would be "mine"
+  const libraryPlaylists = filtered;
+  const myPlaylists: typeof filtered = [];
+
+  const displayedPlaylists =
+    activeTab === 'library' ? libraryPlaylists : myPlaylists;
+
+  return (
+    <View style={styles.container}>
+      <FlatList
+        data={displayedPlaylists}
+        keyExtractor={(item) => item.id}
+        contentContainerStyle={styles.listContent}
+        ListHeaderComponent={
+          <View style={styles.header}>
+            <Text style={styles.title}>Playlists</Text>
+
+            <View style={styles.searchRow}>
+              <View style={styles.searchWrapper}>
+                <SearchFilter
+                  value={search}
+                  onChangeText={setSearch}
+                  placeholder="Search playlists..."
+                />
+              </View>
+              <Button
+                title="+ New Playlist"
+                onPress={() => {}}
+                variant="primary"
+                size="small"
+              />
+            </View>
+
+            {/* Sub-tabs */}
+            <View style={styles.tabs}>
+              <Pressable
+                onPress={() => setActiveTab('library')}
+                style={[
+                  styles.tab,
+                  activeTab === 'library' && styles.tabActive,
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.tabText,
+                    activeTab === 'library' && styles.tabTextActive,
+                  ]}
+                >
+                  Blend Library
+                </Text>
+              </Pressable>
+              <Pressable
+                onPress={() => setActiveTab('mine')}
+                style={[
+                  styles.tab,
+                  activeTab === 'mine' && styles.tabActive,
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.tabText,
+                    activeTab === 'mine' && styles.tabTextActive,
+                  ]}
+                >
+                  My Playlists
+                </Text>
+              </Pressable>
+            </View>
+          </View>
+        }
+        renderItem={({ item }) => (
+          <PlaylistCard
+            playlist={item}
+            onPlay={() => router.push(`/playlist/${item.id}`)}
+            onCopy={() => {}}
+          />
+        )}
+        ListEmptyComponent={
+          activeTab === 'mine' ? (
+            <EmptyState
+              title="No Custom Playlists"
+              message="Create your own playlists to practice specific word sets with your students."
+              actionLabel="Create Playlist"
+              onAction={() => {}}
+            />
+          ) : null
+        }
+      />
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: APP_COLORS.background,
+  },
+  listContent: {
+    paddingBottom: 24,
+  },
+  header: {
+    paddingHorizontal: 16,
+    paddingTop: 60,
+    paddingBottom: 8,
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: '800',
+    color: APP_COLORS.textPrimary,
+    marginBottom: 16,
+  },
+  searchRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 16,
+  },
+  searchWrapper: {
+    flex: 1,
+  },
+  tabs: {
+    flexDirection: 'row',
+    gap: 4,
+    backgroundColor: '#F3F4F6',
+    borderRadius: 10,
+    padding: 3,
+    marginBottom: 8,
+  },
+  tab: {
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  tabActive: {
+    backgroundColor: APP_COLORS.surface,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  tabText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: APP_COLORS.textSecondary,
+  },
+  tabTextActive: {
+    color: APP_COLORS.textPrimary,
+    fontWeight: '600',
+  },
+});
