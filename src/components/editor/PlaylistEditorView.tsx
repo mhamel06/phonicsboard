@@ -10,6 +10,7 @@ import React, { useCallback, useState } from 'react';
 import {
   FlatList,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -223,34 +224,37 @@ export default function PlaylistEditorView({
         </View>
       </View>
 
-      {/* Word chain list */}
-      <FlatList
-        data={words}
-        renderItem={renderWordRow}
-        keyExtractor={(_, index) => `word-${index}`}
-        contentContainerStyle={styles.listContent}
-        ListFooterComponent={
-          <Pressable
-            onPress={handleAddWord}
-            style={({ pressed }) => [
-              styles.addButton,
-              pressed && styles.addButtonPressed,
-            ]}
-            accessibilityRole="button"
-            accessibilityLabel="Add word"
-          >
-            <Feather name="plus" size={20} color={APP_COLORS.primary} />
-            <Text style={styles.addButtonText}>Add Word</Text>
-          </Pressable>
-        }
-      />
+      {/* Word chain list — takes remaining space above deck tiles */}
+      <View style={styles.wordSection}>
+        <Text style={styles.sectionLabel}>WORD CHAIN</Text>
+        <FlatList
+          data={words}
+          renderItem={renderWordRow}
+          keyExtractor={(_, index) => `word-${index}`}
+          contentContainerStyle={styles.listContent}
+          ListFooterComponent={
+            <Pressable
+              onPress={handleAddWord}
+              style={({ pressed }) => [
+                styles.addButton,
+                pressed && styles.addButtonPressed,
+              ]}
+              accessibilityRole="button"
+              accessibilityLabel="Add word"
+            >
+              <Feather name="plus" size={20} color={APP_COLORS.primary} />
+              <Text style={styles.addButtonText}>Add Word</Text>
+            </Pressable>
+          }
+        />
+      </View>
 
-      {/* Deck tile reference */}
+      {/* Deck tile reference — fixed height scrollable panel at bottom */}
       <View style={styles.deckReference}>
         <Text style={styles.deckRefTitle}>
-          Deck Tiles (tap to fill active slot)
+          DECK TILES (tap to fill active slot)
         </Text>
-        <View style={styles.deckColumns}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.deckColumnsScroll}>
           {linkedDeck.columns.map((col) => (
             <View key={col.id} style={styles.deckColumn}>
               <Text style={styles.columnLabel}>Col {col.position + 1}</Text>
@@ -274,7 +278,7 @@ export default function PlaylistEditorView({
               ))}
             </View>
           ))}
-        </View>
+        </ScrollView>
       </View>
     </View>
   );
@@ -356,8 +360,22 @@ const styles = StyleSheet.create({
     opacity: 0.8,
     transform: [{ scale: 0.97 }],
   },
-  listContent: {
+  wordSection: {
+    flex: 1,
+    minHeight: 180,
+  },
+  sectionLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: APP_COLORS.textSecondary,
+    fontFamily: 'Inter',
+    letterSpacing: 0.5,
+    paddingHorizontal: 16,
     paddingTop: 12,
+    paddingBottom: 4,
+  },
+  listContent: {
+    paddingTop: 4,
     paddingBottom: 8,
   },
   addButton: {
@@ -384,6 +402,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter',
   },
   deckReference: {
+    height: 280,
     borderTopWidth: 1,
     borderTopColor: '#E5E7EB',
     backgroundColor: APP_COLORS.surface,
@@ -399,12 +418,13 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
-  deckColumns: {
+  deckColumnsScroll: {
     flexDirection: 'row',
     gap: 12,
+    paddingBottom: 12,
   },
   deckColumn: {
-    flex: 1,
+    width: 100,
     alignItems: 'center',
     gap: 6,
   },
