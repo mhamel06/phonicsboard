@@ -9,7 +9,7 @@ import React from 'react';
 import { Pressable, StyleSheet, Text, type ViewStyle } from 'react-native';
 
 import type { Grapheme } from '@/engine/types';
-import { getTileColor } from '@/utils/colors';
+import { getTileColor, TILE_COLOR_HEX } from '@/utils/colors';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -60,7 +60,10 @@ export default function Tile({
   layout = 'list',
 }: TileProps) {
   const dimensions = SIZE_MAP[size];
-  const bgColor = getTileColor(grapheme.type);
+  // Prefer the grapheme's explicit color field; fall back to type-based color
+  const bgColor = grapheme.color
+    ? (TILE_COLOR_HEX[grapheme.color] ?? getTileColor(grapheme.type))
+    : getTileColor(grapheme.type);
 
   // Apply scale, but enforce minimum 44px touch target
   const scaledMinSize = Math.max(44, dimensions.minSize * scale);

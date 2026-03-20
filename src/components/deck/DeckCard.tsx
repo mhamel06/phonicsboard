@@ -11,7 +11,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 
 import type { Deck } from '@/engine/types';
-import { APP_COLORS, getTileColor } from '@/utils/colors';
+import { APP_COLORS, getTileColor, TILE_COLOR_HEX } from '@/utils/colors';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -22,6 +22,8 @@ export interface DeckCardProps {
   deck: Deck;
   /** Called when the card is pressed */
   onPress: () => void;
+  /** Called when the edit button is pressed (only shown for non-preset decks) */
+  onEdit?: () => void;
 }
 
 // ---------------------------------------------------------------------------
@@ -43,7 +45,11 @@ function getPreviewColors(deck: Deck): string[] {
   const colorSet = new Set<string>();
   for (const column of deck.columns) {
     for (const grapheme of column.graphemes) {
-      colorSet.add(getTileColor(grapheme.type));
+      // Prefer the grapheme's explicit color; fall back to type-based color
+      const hex = grapheme.color
+        ? (TILE_COLOR_HEX[grapheme.color] ?? getTileColor(grapheme.type))
+        : getTileColor(grapheme.type);
+      colorSet.add(hex);
       if (colorSet.size >= 6) break;
     }
     if (colorSet.size >= 6) break;
@@ -55,7 +61,7 @@ function getPreviewColors(deck: Deck): string[] {
 // Component
 // ---------------------------------------------------------------------------
 
-export default function DeckCard({ deck, onPress }: DeckCardProps) {
+export default function DeckCard({ deck, onPress, onEdit }: DeckCardProps) {
   const description = getDeckDescription(deck);
   const previewColors = getPreviewColors(deck);
   const totalTiles = deck.columns.reduce(
@@ -86,6 +92,23 @@ export default function DeckCard({ deck, onPress }: DeckCardProps) {
             {description}
           </Text>
         </View>
+        {onEdit && !deck.isPreset && (
+          <Pressable
+            onPress={(e) => {
+              e.stopPropagation?.();
+              onEdit();
+            }}
+            style={({ pressed }) => [
+              styles.editButton,
+              pressed ? styles.cardPressed : undefined,
+            ]}
+            accessibilityRole="button"
+            accessibilityLabel={`Edit deck: ${deck.name}`}
+            hitSlop={6}
+          >
+            <Feather name="edit-2" size={16} color={APP_COLORS.primary} />
+          </Pressable>
+        )}
         <Feather
           name="chevron-right"
           size={20}
@@ -140,6 +163,15 @@ const styles = StyleSheet.create({
   cardPressed: {
     opacity: 0.9,
     transform: [{ scale: 0.98 }],
+  },
+  editButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    backgroundColor: '#E8F5E9',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 8,
   },
   topRow: {
     flexDirection: 'row',

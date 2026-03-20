@@ -54,6 +54,7 @@ export default function DecksScreen() {
               <DeckCard
                 deck={item}
                 onPress={() => router.push(`/deck/${item.id}`)}
+                onEdit={() => router.push(`/deck/editor/${item.id}`)}
               />
             </View>
             <View style={styles.shareButtonContainer}>

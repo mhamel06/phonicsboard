@@ -16,10 +16,42 @@ import {
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 
-import type { Deck, DeckColumn, Grapheme, TileColor } from '@/engine/types';
+import type { Deck, DeckColumn, Grapheme, GraphemeType, TileColor } from '@/engine/types';
 import { APP_COLORS, TILE_COLOR_HEX } from '@/utils/colors';
+import { classifyGrapheme } from '@/engine/phonics';
+import { TILE_COLORS } from '@/engine/constants';
 import ColorPalette from './ColorPalette';
 import ColumnEditor from './ColumnEditor';
+
+/**
+ * Maps a TileColor back to the most likely GraphemeType.
+ * Built by inverting the TILE_COLORS constant, so the primary type
+ * for each color is used. Colors not in the default mapping fall
+ * back to 'consonant'.
+ */
+const COLOR_TO_TYPE: Record<TileColor, GraphemeType> = (() => {
+  const map: Partial<Record<TileColor, GraphemeType>> = {};
+  for (const [type, color] of Object.entries(TILE_COLORS)) {
+    // First mapping wins — gives the "primary" type for that color
+    if (!map[color as TileColor]) {
+      map[color as TileColor] = type as GraphemeType;
+    }
+  }
+  return {
+    blue: 'consonant',
+    green: 'vowel',
+    orange: 'digraph',
+    teal: 'vowel_team',
+    purple: 'suffix',
+    pink: 'heart',
+    lavender: 'suffix',
+    yellow: 'vowel',
+    white: 'blank',
+    red: 'vowel',
+    peach: 'consonant',
+    ...map,
+  };
+})();
 
 // ---------------------------------------------------------------------------
 // Types
@@ -48,7 +80,7 @@ function createEmptyGrapheme(color: TileColor): Grapheme {
   return {
     id: generateId('g'),
     text: '',
-    type: 'consonant',
+    type: COLOR_TO_TYPE[color] ?? 'consonant',
     color,
   };
 }
@@ -154,9 +186,14 @@ export default function DeckEditorView({
           if (col.id !== colId) return col;
           return {
             ...col,
-            graphemes: col.graphemes.map((g) =>
-              g.id === graphemeId ? { ...g, text } : g,
-            ),
+            graphemes: col.graphemes.map((g) => {
+              if (g.id !== graphemeId) return g;
+              // Auto-classify the grapheme type based on the new text
+              const type = text.trim().length > 0
+                ? classifyGrapheme(text)
+                : (COLOR_TO_TYPE[g.color] ?? 'consonant');
+              return { ...g, text, type };
+            }),
           };
         }),
       );
@@ -166,13 +203,17 @@ export default function DeckEditorView({
 
   const handleTileColorChange = useCallback(
     (graphemeId: string) => {
-      // Apply the currently selected palette color to the tile
+      // Apply the currently selected palette color to the tile and update type
       setColumns((prev) =>
         prev.map((col) => ({
           ...col,
-          graphemes: col.graphemes.map((g) =>
-            g.id === graphemeId ? { ...g, color: selectedColor } : g,
-          ),
+          graphemes: col.graphemes.map((g) => {
+            if (g.id !== graphemeId) return g;
+            const type = g.text.trim().length > 0
+              ? classifyGrapheme(g.text)
+              : (COLOR_TO_TYPE[selectedColor] ?? 'consonant');
+            return { ...g, color: selectedColor, type };
+          }),
         })),
       );
     },
@@ -188,14 +229,19 @@ export default function DeckEditorView({
   const handleColorSelect = useCallback(
     (color: TileColor) => {
       setSelectedColor(color);
-      // If a tile is selected, immediately apply the color
+      // If a tile is selected, immediately apply the color and update its type
       if (selectedTileId) {
         setColumns((prev) =>
           prev.map((col) => ({
             ...col,
-            graphemes: col.graphemes.map((g) =>
-              g.id === selectedTileId ? { ...g, color } : g,
-            ),
+            graphemes: col.graphemes.map((g) => {
+              if (g.id !== selectedTileId) return g;
+              // If the tile has text, classify from text; otherwise derive from color
+              const type = g.text.trim().length > 0
+                ? classifyGrapheme(g.text)
+                : (COLOR_TO_TYPE[color] ?? 'consonant');
+              return { ...g, color, type };
+            }),
           })),
         );
       }
