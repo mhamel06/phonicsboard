@@ -8,4 +8,4 @@ dist/
 .claude-flow/
 .swarm/
 .obsidian/
-package-lock.json
+.secret_do
