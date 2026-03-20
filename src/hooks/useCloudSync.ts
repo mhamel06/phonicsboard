@@ -57,8 +57,9 @@ function mergeDecks(local: Deck[], cloud: Deck[]): Deck[] {
 }
 
 /**
- * Merges local and cloud playlists. Cloud wins on conflict
- * (playlists lack updatedAt, so cloud always wins for duplicates).
+ * Merges local and cloud playlists. Cloud wins on conflict for user-created
+ * playlists. Preset playlists (id starts with "preset-") are never overwritten
+ * by cloud data — the code version is always authoritative.
  */
 function mergePlaylists(local: Playlist[], cloud: Playlist[]): Playlist[] {
   const merged = new Map<string, Playlist>();
@@ -68,6 +69,10 @@ function mergePlaylists(local: Playlist[], cloud: Playlist[]): Playlist[] {
   }
 
   for (const cloudPlaylist of cloud) {
+    // Never let cloud overwrite a preset — code is authoritative
+    if (cloudPlaylist.id.startsWith('preset-') && merged.has(cloudPlaylist.id)) {
+      continue;
+    }
     merged.set(cloudPlaylist.id, cloudPlaylist);
   }
 

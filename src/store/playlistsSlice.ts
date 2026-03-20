@@ -30,11 +30,12 @@ const playlistsSlice = createSlice({
   initialState,
   reducers: {
     setPlaylists(state, action: PayloadAction<Playlist[]>) {
-      // Merge: keep preset playlists that may not be in the saved data,
-      // but prefer the saved version if both exist.
-      const savedIds = new Set(action.payload.map((p) => p.id));
-      const missingPresets = allPlaylists.filter((p) => !savedIds.has(p.id));
-      state.playlists = [...action.payload, ...missingPresets];
+      // Merge: preset playlists always use the latest code version (they may
+      // have been updated with new words). User-created playlists are kept
+      // from the saved data.
+      const presetIds = new Set(allPlaylists.map((p) => p.id));
+      const userPlaylists = action.payload.filter((p) => !presetIds.has(p.id));
+      state.playlists = [...allPlaylists, ...userPlaylists];
     },
 
     setActivePlaylist(state, action: PayloadAction<Playlist | null>) {
