@@ -31,7 +31,12 @@ const decksSlice = createSlice({
   initialState,
   reducers: {
     setDecks(state, action: PayloadAction<Deck[]>) {
-      state.decks = action.payload;
+      // Merge: keep preset decks that may not be in the saved data,
+      // but prefer the saved version if both exist (user may have
+      // shuffled columns on a preset deck).
+      const savedIds = new Set(action.payload.map((d) => d.id));
+      const missingPresets = allDecks.filter((d) => !savedIds.has(d.id));
+      state.decks = [...action.payload, ...missingPresets];
     },
 
     setActiveDeck(state, action: PayloadAction<Deck | null>) {

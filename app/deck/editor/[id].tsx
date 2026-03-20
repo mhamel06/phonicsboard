@@ -6,7 +6,7 @@
  */
 
 import React, { useCallback, useMemo, useState } from 'react';
-import { Alert, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Alert, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Stack } from 'expo-router';
 
@@ -14,6 +14,7 @@ import type { Deck } from '@/engine/types';
 import { APP_COLORS } from '@/utils/colors';
 import { useAppDispatch, useAppSelector } from '@/store/store';
 import { addDeck, updateDeck } from '@/store/decksSlice';
+import { useHydrated } from '@/hooks/usePersistence';
 import DeckEditorView from '@/components/editor/DeckEditorView';
 import Button from '@/components/common/Button';
 
@@ -89,6 +90,7 @@ export default function DeckEditorScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const dispatch = useAppDispatch();
+  const hydrated = useHydrated();
 
   const isNew = id === 'new';
 
@@ -166,13 +168,29 @@ export default function DeckEditorScreen() {
     );
   }
 
-  // Deck not found
+  // Wait for persistence hydration before deciding "not found"
+  if (!hydrated && !editableDeck) {
+    return (
+      <View style={styles.centered}>
+        <Stack.Screen options={{ headerShown: false }} />
+        <ActivityIndicator size="large" color={APP_COLORS.primary} />
+      </View>
+    );
+  }
+
+  // Deck not found after hydration — redirect home
   if (!editableDeck) {
     return (
       <View style={styles.centered}>
         <Stack.Screen options={{ headerShown: false }} />
-        <Text style={styles.errorText}>Deck not found.</Text>
-        <Button title="Go Back" onPress={() => router.back()} />
+        <Text style={styles.errorText}>
+          Deck not found. It may have been deleted or not saved.
+        </Text>
+        <Button
+          title="Go Home"
+          variant="primary"
+          onPress={() => router.replace('/')}
+        />
       </View>
     );
   }

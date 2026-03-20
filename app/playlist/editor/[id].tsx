@@ -7,8 +7,8 @@
  * Local editing state until Save, then dispatches to Redux.
  */
 
-import React, { useCallback, useMemo, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Stack } from 'expo-router';
 
@@ -16,8 +16,15 @@ import type { Playlist } from '@/engine/types';
 import { APP_COLORS } from '@/utils/colors';
 import { useAppDispatch, useAppSelector } from '@/store/store';
 import { addPlaylist, updatePlaylist } from '@/store/playlistsSlice';
+import { useHydrated } from '@/hooks/usePersistence';
+import Button from '@/components/common/Button';
 import PlaylistEditorView from '@/components/editor/PlaylistEditorView';
 import DeckLinkDialog from '@/components/editor/DeckLinkDialog';
+
+// Small helper to avoid inline component in render
+function RedirectButton({ title, onPress }: { title: string; onPress: () => void }) {
+  return <Button title={title} variant="primary" onPress={onPress} />;
+}
 
 // ---------------------------------------------------------------------------
 // Screen
@@ -27,6 +34,7 @@ export default function PlaylistEditorScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const dispatch = useAppDispatch();
+  const hydrated = useHydrated();
 
   const isNew = id === 'new';
 
@@ -42,6 +50,13 @@ export default function PlaylistEditorScreen() {
     existingPlaylist?.linkedDeckId ?? null,
   );
   const [showDeckDialog, setShowDeckDialog] = useState(isNew);
+
+  // When hydration completes and we find the playlist, update the selected deck
+  useEffect(() => {
+    if (hydrated && existingPlaylist && !selectedDeckId) {
+      setSelectedDeckId(existingPlaylist.linkedDeckId);
+    }
+  }, [hydrated, existingPlaylist, selectedDeckId]);
 
   // Find the linked deck
   const linkedDeck = useMemo(
@@ -90,12 +105,28 @@ export default function PlaylistEditorScreen() {
 
   // --- Render ----------------------------------------------------------------
 
-  // Not-found state for existing playlist
+  // Wait for persistence hydration before deciding "not found"
+  if (!hydrated) {
+    return (
+      <View style={styles.centered}>
+        <Stack.Screen options={{ headerShown: false }} />
+        <ActivityIndicator size="large" color={APP_COLORS.primary} />
+      </View>
+    );
+  }
+
+  // Not-found state for existing playlist — redirect to playlists list
   if (!isNew && !existingPlaylist) {
     return (
       <View style={styles.centered}>
         <Stack.Screen options={{ headerShown: false }} />
-        <Text style={styles.errorText}>Playlist not found.</Text>
+        <Text style={styles.errorText}>
+          Playlist not found. It may have been deleted or not saved.
+        </Text>
+        <RedirectButton
+          title="Back to Playlists"
+          onPress={() => router.replace('/playlists')}
+        />
       </View>
     );
   }
@@ -114,12 +145,16 @@ export default function PlaylistEditorScreen() {
     );
   }
 
-  // No linked deck resolved (should not happen normally)
+  // No linked deck resolved — let user pick a different deck instead of dead end
   if (!linkedDeck) {
     return (
-      <View style={styles.centered}>
+      <View style={styles.screen}>
         <Stack.Screen options={{ headerShown: false }} />
-        <Text style={styles.errorText}>Linked deck not found.</Text>
+        <DeckLinkDialog
+          decks={allDecks}
+          onSelect={handleDeckSelect}
+          onCancel={handleDeckDialogCancel}
+        />
       </View>
     );
   }
@@ -151,6 +186,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: APP_COLORS.background,
+    gap: 16,
   },
   errorText: {
     fontSize: 16,

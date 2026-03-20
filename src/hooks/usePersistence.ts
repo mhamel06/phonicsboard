@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { createContext, useContext, useEffect, useRef, useState } from 'react';
 
 import { useAppDispatch, useAppSelector } from '@/store/store';
 import { setDecks } from '@/store/decksSlice';
@@ -18,19 +18,37 @@ import type { SettingsState } from '@/store/settingsSlice';
 const DEBOUNCE_MS = 500;
 
 /**
+ * Context that exposes whether AsyncStorage data has been loaded into Redux.
+ * Components that depend on persisted data (e.g. editors opened via deep link
+ * or page refresh) should check this before rendering "not found" states.
+ */
+export const HydrationContext = createContext<boolean>(false);
+
+/**
+ * Returns true once AsyncStorage data has been loaded into the Redux store.
+ * Must be used inside a HydrationContext.Provider (set up in the root layout).
+ */
+export function useHydrated(): boolean {
+  return useContext(HydrationContext);
+}
+
+/**
  * Hook that auto-saves Redux state to AsyncStorage.
  * On mount, loads persisted data and dispatches to the store.
  * Subscribes to store changes and debounces writes.
  *
  * Call this once at the app root level.
+ *
+ * @returns Whether hydration from AsyncStorage is complete.
  */
-export function usePersistence() {
+export function usePersistence(): boolean {
   const dispatch = useAppDispatch();
   const decks = useAppSelector((state) => state.decks.decks);
   const playlists = useAppSelector((state) => state.playlists.playlists);
   const settings = useAppSelector((state) => state.settings);
 
   const isHydrated = useRef(false);
+  const [hydrated, setHydrated] = useState(false);
   const debounceTimers = useRef<{
     decks: ReturnType<typeof setTimeout> | null;
     playlists: ReturnType<typeof setTimeout> | null;
@@ -62,6 +80,7 @@ export function usePersistence() {
       }
 
       isHydrated.current = true;
+      setHydrated(true);
     }
 
     function applySettings(saved: SettingsState) {
@@ -131,4 +150,6 @@ export function usePersistence() {
       if (timers.settings) clearTimeout(timers.settings);
     };
   }, []);
+
+  return hydrated;
 }

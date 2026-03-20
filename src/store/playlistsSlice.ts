@@ -29,7 +29,11 @@ const playlistsSlice = createSlice({
   initialState,
   reducers: {
     setPlaylists(state, action: PayloadAction<Playlist[]>) {
-      state.playlists = action.payload;
+      // Merge: keep preset playlists that may not be in the saved data,
+      // but prefer the saved version if both exist.
+      const savedIds = new Set(action.payload.map((p) => p.id));
+      const missingPresets = allPlaylists.filter((p) => !savedIds.has(p.id));
+      state.playlists = [...action.payload, ...missingPresets];
     },
 
     setActivePlaylist(state, action: PayloadAction<Playlist | null>) {
