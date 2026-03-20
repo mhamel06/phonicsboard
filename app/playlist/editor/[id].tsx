@@ -57,7 +57,11 @@ export default function PlaylistEditorScreen() {
   }, []);
 
   const handleDeckDialogCancel = useCallback(() => {
-    router.back();
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace('/playlists');
+    }
   }, [router]);
 
   const handleSave = useCallback(
@@ -67,13 +71,21 @@ export default function PlaylistEditorScreen() {
       } else {
         dispatch(updatePlaylist(playlist));
       }
-      router.back();
+      if (router.canGoBack()) {
+        router.back();
+      } else {
+        router.replace('/playlists');
+      }
     },
     [isNew, existingPlaylist, dispatch, router],
   );
 
   const handleCancel = useCallback(() => {
-    router.back();
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace('/playlists');
+    }
   }, [router]);
 
   // --- Render ----------------------------------------------------------------
