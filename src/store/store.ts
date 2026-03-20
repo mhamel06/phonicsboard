@@ -5,6 +5,7 @@ import decksReducer from './decksSlice';
 import playlistsReducer from './playlistsSlice';
 import wordMatsReducer from './wordMatsSlice';
 import settingsReducer from './settingsSlice';
+import authReducer from './authSlice';
 
 export const store = configureStore({
   reducer: {
@@ -12,6 +13,7 @@ export const store = configureStore({
     playlists: playlistsReducer,
     wordMats: wordMatsReducer,
     settings: settingsReducer,
+    auth: authReducer,
   },
 });
 

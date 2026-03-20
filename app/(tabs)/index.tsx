@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 
 import { useAppSelector } from '@/store/store';
 import DeckCard from '@/components/deck/DeckCard';
+import ShareButton from '@/components/common/ShareButton';
 import SearchFilter from '@/components/common/SearchFilter';
 import Button from '@/components/common/Button';
 import { APP_COLORS } from '@/utils/colors';
@@ -48,10 +49,20 @@ export default function DecksScreen() {
           </View>
         }
         renderItem={({ item }) => (
-          <DeckCard
-            deck={item}
-            onPress={() => router.push(`/deck/${item.id}`)}
-          />
+          <View style={styles.cardRow}>
+            <View style={styles.cardWrapper}>
+              <DeckCard
+                deck={item}
+                onPress={() => router.push(`/deck/${item.id}`)}
+              />
+            </View>
+            <View style={styles.shareButtonContainer}>
+              <ShareButton
+                resourceType="deck"
+                resourceId={item.id}
+              />
+            </View>
+          </View>
         )}
         ListFooterComponent={
           <View style={styles.banner}>
@@ -97,6 +108,16 @@ const styles = StyleSheet.create({
   },
   searchWrapper: {
     flex: 1,
+  },
+  cardRow: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+  },
+  cardWrapper: {
+    flex: 1,
+  },
+  shareButtonContainer: {
+    paddingRight: 16,
   },
   banner: {
     marginHorizontal: 16,

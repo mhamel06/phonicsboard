@@ -1,4 +1,7 @@
+import React from 'react';
 import { Tabs } from 'expo-router';
+
+import AuthButton from '@/components/common/AuthButton';
 
 export default function TabLayout() {
   return (
@@ -7,6 +10,8 @@ export default function TabLayout() {
         tabBarActiveTintColor: '#2D6A4F',
         headerStyle: { backgroundColor: '#FFF8F0' },
         tabBarStyle: { backgroundColor: '#FFFFFF' },
+        headerRight: () => <AuthButton />,
+        headerRightContainerStyle: { paddingRight: 12 },
       }}
     >
       <Tabs.Screen

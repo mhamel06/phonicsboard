@@ -2,6 +2,7 @@ import React from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 
+import { useAppSelector } from '@/store/store';
 import { APP_COLORS } from '@/utils/colors';
 
 interface StatCardProps {
@@ -59,11 +60,39 @@ const statStyles = StyleSheet.create({
 });
 
 export default function ProgressScreen() {
+  const { user, isAuthenticated } = useAppSelector((state) => state.auth);
+
   return (
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.content}
     >
+      {/* User info / auth prompt */}
+      {isAuthenticated && user ? (
+        <View style={styles.userCard}>
+          <View style={styles.userAvatarContainer}>
+            <Text style={styles.userAvatarText}>
+              {user.displayName.charAt(0).toUpperCase()}
+            </Text>
+          </View>
+          <View style={styles.userInfo}>
+            <Text style={styles.userName}>{user.displayName}</Text>
+            <Text style={styles.userEmail}>{user.email}</Text>
+            <View style={styles.syncRow}>
+              <Feather name="check-circle" size={14} color={APP_COLORS.primary} />
+              <Text style={styles.syncText}>Synced across devices</Text>
+            </View>
+          </View>
+        </View>
+      ) : (
+        <View style={styles.authPrompt}>
+          <Feather name="cloud" size={24} color={APP_COLORS.textSecondary} />
+          <Text style={styles.authPromptText}>
+            Sign in to save progress across devices
+          </Text>
+        </View>
+      )}
+
       {/* Coming Soon banner */}
       <View style={styles.comingSoon}>
         <View style={styles.comingSoonIcon}>
@@ -143,6 +172,71 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: APP_COLORS.textSecondary,
     textAlign: 'center',
+  },
+  userCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: APP_COLORS.surface,
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  userAvatarContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: APP_COLORS.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 14,
+  },
+  userAvatarText: {
+    color: '#FFFFFF',
+    fontSize: 20,
+    fontWeight: '700',
+  },
+  userInfo: {
+    flex: 1,
+  },
+  userName: {
+    fontSize: 17,
+    fontWeight: '700',
+    color: APP_COLORS.textPrimary,
+  },
+  userEmail: {
+    fontSize: 13,
+    color: APP_COLORS.textSecondary,
+    marginTop: 2,
+  },
+  syncRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 6,
+  },
+  syncText: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: APP_COLORS.primary,
+  },
+  authPrompt: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    backgroundColor: '#F3F4F6',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 24,
+  },
+  authPromptText: {
+    fontSize: 14,
+    color: APP_COLORS.textSecondary,
+    flex: 1,
   },
   statsRow: {
     flexDirection: 'row',

@@ -4,9 +4,11 @@ import { useRouter } from 'expo-router';
 
 import { useAppSelector } from '@/store/store';
 import PlaylistCard from '@/components/playlist/PlaylistCard';
+import ShareButton from '@/components/common/ShareButton';
 import SearchFilter from '@/components/common/SearchFilter';
 import Button from '@/components/common/Button';
 import EmptyState from '@/components/common/EmptyState';
+import ImportDialog from '@/components/common/ImportDialog';
 import { APP_COLORS } from '@/utils/colors';
 
 type SubTab = 'library' | 'mine';
@@ -16,6 +18,7 @@ export default function PlaylistsScreen() {
   const { playlists } = useAppSelector((state) => state.playlists);
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState<SubTab>('library');
+  const [importVisible, setImportVisible] = useState(false);
 
   const filtered = playlists.filter((p) =>
     p.name.toLowerCase().includes(search.toLowerCase()),
@@ -51,6 +54,17 @@ export default function PlaylistsScreen() {
                 onPress={() => {}}
                 variant="primary"
                 size="small"
+              />
+            </View>
+
+            {/* Import from share code */}
+            <View style={styles.importRow}>
+              <Button
+                title="Import from Code"
+                onPress={() => setImportVisible(true)}
+                variant="secondary"
+                size="small"
+                icon="download"
               />
             </View>
 
@@ -92,11 +106,21 @@ export default function PlaylistsScreen() {
           </View>
         }
         renderItem={({ item }) => (
-          <PlaylistCard
-            playlist={item}
-            onPlay={() => router.push(`/playlist/${item.id}`)}
-            onCopy={() => {}}
-          />
+          <View style={styles.playlistRow}>
+            <View style={styles.playlistCardWrapper}>
+              <PlaylistCard
+                playlist={item}
+                onPlay={() => router.push(`/playlist/${item.id}`)}
+                onCopy={() => {}}
+              />
+            </View>
+            <View style={styles.shareButtonContainer}>
+              <ShareButton
+                resourceType="playlist"
+                resourceId={item.id}
+              />
+            </View>
+          </View>
         )}
         ListEmptyComponent={
           activeTab === 'mine' ? (
@@ -108,6 +132,15 @@ export default function PlaylistsScreen() {
             />
           ) : null
         }
+      />
+
+      <ImportDialog
+        visible={importVisible}
+        onClose={() => setImportVisible(false)}
+        onImport={(code) => {
+          // TODO: look up share code and import the playlist/deck
+          console.log('Importing share code:', code);
+        }}
       />
     </View>
   );
@@ -140,6 +173,20 @@ const styles = StyleSheet.create({
   },
   searchWrapper: {
     flex: 1,
+  },
+  importRow: {
+    flexDirection: 'row',
+    marginBottom: 12,
+  },
+  playlistRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  playlistCardWrapper: {
+    flex: 1,
+  },
+  shareButtonContainer: {
+    paddingRight: 16,
   },
   tabs: {
     flexDirection: 'row',
