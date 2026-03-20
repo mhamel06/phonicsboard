@@ -164,16 +164,18 @@ export default function PlaylistPlayScreen() {
         </Pressable>
       )}
 
-      <ScaleControls
-        scale={scale}
-        onScaleUp={scaleUp}
-        onScaleDown={scaleDown}
-        onReset={resetScale}
-        canScaleUp={canScaleUp}
-        canScaleDown={canScaleDown}
-      />
+      {!isFocus && (
+        <ScaleControls
+          scale={scale}
+          onScaleUp={scaleUp}
+          onScaleDown={scaleDown}
+          onReset={resetScale}
+          canScaleUp={canScaleUp}
+          canScaleDown={canScaleDown}
+        />
+      )}
 
-      <KeyboardHints hints={playlistHints} visible={showHints} />
+      {!isFocus && <KeyboardHints hints={playlistHints} visible={showHints} />}
     </View>
   );
 }
