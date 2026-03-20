@@ -10,6 +10,10 @@ import { blendItUpPlaylist } from './blend-it-up';
 import { digraphDashPlaylist } from './digraph-dash';
 import { rControlledPlaylist } from './r-controlled';
 import { suffixSprintPlaylist } from './suffix-sprint';
+import { openSyllablesPlaylist } from './open-syllables';
+import { twoSyllableClosedClosedPlaylist } from './two-syllable-closed-closed';
+import { twoSyllableOpenClosedPlaylist } from './two-syllable-open-closed';
+import { closedSyllableExceptionsPlaylist } from './closed-syllable-exceptions';
 
 export {
   cvcStarterPlaylist,
@@ -18,6 +22,10 @@ export {
   digraphDashPlaylist,
   rControlledPlaylist,
   suffixSprintPlaylist,
+  openSyllablesPlaylist,
+  twoSyllableClosedClosedPlaylist,
+  twoSyllableOpenClosedPlaylist,
+  closedSyllableExceptionsPlaylist,
 };
 
 export const allPlaylists: Playlist[] = [
@@ -27,4 +35,8 @@ export const allPlaylists: Playlist[] = [
   digraphDashPlaylist,
   rControlledPlaylist,
   suffixSprintPlaylist,
+  openSyllablesPlaylist,
+  twoSyllableClosedClosedPlaylist,
+  twoSyllableOpenClosedPlaylist,
+  closedSyllableExceptionsPlaylist,
 ];
