@@ -11,7 +11,7 @@
  * Interaction: two-step — tap a tile to select, then tap a box to place.
  */
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   Pressable,
   SafeAreaView,
@@ -21,7 +21,7 @@ import {
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 
-import type { Grapheme } from '@/engine/types';
+import type { Grapheme, WordMatMode } from '@/engine/types';
 import { APP_COLORS } from '@/utils/colors';
 import { useAppDispatch, useAppSelector } from '@/store/store';
 import {
@@ -37,6 +37,8 @@ import {
 import ElkoninWorkspace from '@/components/word-mat/ElkoninWorkspace';
 import TileKeyboard from '@/components/word-mat/TileKeyboard';
 import ModeSelector from '@/components/word-mat/ModeSelector';
+import { useKeyboardNav } from '@/hooks/useKeyboardNav';
+import KeyboardHints from '@/components/common/KeyboardHints';
 
 // ---------------------------------------------------------------------------
 // Component
@@ -51,6 +53,7 @@ export default function WordMatPlayScreen() {
   const activeState = useAppSelector(
     (state) => state.wordMats.activeWordMatState,
   );
+  const [showHints, setShowHints] = useState(false);
 
   const preset = presets.find((p) => p.id === presetId);
 
@@ -64,6 +67,46 @@ export default function WordMatPlayScreen() {
       dispatch(setActiveWordMat(null));
     };
   }, [preset, dispatch]);
+
+  // Keyboard navigation (web only)
+  const handleClearLastBox = () => {
+    if (!activeState) return;
+    // Find the last filled box and clear it
+    const filledBoxes = activeState.boxes.filter((b) => b.content !== null);
+    if (filledBoxes.length > 0) {
+      dispatch(clearBoxAction(filledBoxes[filledBoxes.length - 1].id));
+    }
+  };
+
+  const modes: WordMatMode[] = ['syllables', 'sounds', 'graphemes'];
+
+  const keyboardConfig = useMemo(
+    () => ({
+      escape: () => router.back(),
+      backspace: handleClearLastBox,
+      delete: handleClearLastBox,
+      r: () => dispatch(clearAllBoxesAction()),
+      '1': () => dispatch(switchModeAction(modes[0])),
+      '2': () => dispatch(switchModeAction(modes[1])),
+      '3': () => dispatch(switchModeAction(modes[2])),
+      'shift+?': () => setShowHints((prev) => !prev),
+    }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [dispatch, router, activeState],
+  );
+  useKeyboardNav(keyboardConfig);
+
+  const wordMatHints = useMemo(
+    () => [
+      { key: 'Esc', action: 'Go back' },
+      { key: 'Bksp', action: 'Clear last filled box' },
+      { key: 'R', action: 'Reset all boxes' },
+      { key: '1', action: 'Syllables mode' },
+      { key: '2', action: 'Sounds mode' },
+      { key: '3', action: 'Graphemes mode' },
+    ],
+    [],
+  );
 
   // --- Guard: preset not found ---
   if (!preset) {
@@ -176,6 +219,8 @@ export default function WordMatPlayScreen() {
           onTileSelect={handleTileSelect}
         />
       </View>
+
+      <KeyboardHints hints={wordMatHints} visible={showHints} />
     </SafeAreaView>
   );
 }

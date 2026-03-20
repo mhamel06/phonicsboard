@@ -34,6 +34,8 @@ export interface DeckBoardProps {
   onHistory: () => void;
   /** Called when a column collapse is toggled */
   onToggleCollapse?: (columnIndex: number) => void;
+  /** Display scale factor for projector/classroom use (default 1.0) */
+  scale?: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -45,6 +47,7 @@ export default function DeckBoard({
   deckState,
   onTilePress,
   onToggleCollapse,
+  scale = 1.0,
 }: DeckBoardProps) {
   const handleTilePress = useCallback(
     (columnIndex: number, grapheme: Grapheme) => {
@@ -69,6 +72,7 @@ export default function DeckBoard({
             key={`slot-${index}`}
             grapheme={card}
             isVowel={card ? isVowel(card) : false}
+            scale={scale}
           />
         ))}
       </View>
@@ -86,6 +90,7 @@ export default function DeckBoard({
             column={column}
             onTilePress={(grapheme) => handleTilePress(index, grapheme)}
             onCollapse={() => handleToggleCollapse(index)}
+            scale={scale}
           />
         ))}
       </ScrollView>

@@ -26,6 +26,8 @@ export interface PlaylistPlayerProps {
   onNext: () => void;
   onPrevious: () => void;
   onToggleFocus: () => void;
+  /** Display scale factor for projector/classroom use (default 1.0) */
+  scale?: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -58,6 +60,7 @@ export default function PlaylistPlayer({
   onNext,
   onPrevious,
   onToggleFocus,
+  scale = 1.0,
 }: PlaylistPlayerProps) {
   const currentWord = getCurrentWord(playlistState, playlist);
   const isFirst = playlistState.currentIndex === 0;
@@ -73,6 +76,11 @@ export default function PlaylistPlayer({
         disabled={isFirst}
         style={({ pressed }) => [
           styles.chevron,
+          {
+            width: 48 * scale,
+            height: 48 * scale,
+            borderRadius: 24 * scale,
+          },
           isFirst && styles.chevronDisabled,
           pressed && !isFirst ? styles.chevronPressed : undefined,
         ]}
@@ -82,6 +90,7 @@ export default function PlaylistPlayer({
         <Text
           style={[
             styles.chevronText,
+            { fontSize: 22 * scale },
             isFirst && styles.chevronTextDisabled,
           ]}
         >
@@ -90,12 +99,13 @@ export default function PlaylistPlayer({
       </Pressable>
 
       {/* Word cards */}
-      <View style={styles.cards}>
+      <View style={[styles.cards, { gap: 8 * scale }]}>
         {graphemes.map((grapheme, index) => (
           <CardSlot
             key={`${playlistState.currentIndex}-${index}`}
             grapheme={grapheme}
             isVowel={isVowel(grapheme)}
+            scale={scale}
           />
         ))}
       </View>
@@ -106,6 +116,11 @@ export default function PlaylistPlayer({
         disabled={isLast}
         style={({ pressed }) => [
           styles.chevron,
+          {
+            width: 48 * scale,
+            height: 48 * scale,
+            borderRadius: 24 * scale,
+          },
           isLast && styles.chevronDisabled,
           pressed && !isLast ? styles.chevronPressed : undefined,
         ]}
@@ -115,6 +130,7 @@ export default function PlaylistPlayer({
         <Text
           style={[
             styles.chevronText,
+            { fontSize: 22 * scale },
             isLast && styles.chevronTextDisabled,
           ]}
         >

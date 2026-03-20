@@ -25,6 +25,8 @@ export interface TileColumnProps {
   onTilePress: (grapheme: Grapheme) => void;
   /** Callback when the collapse button is pressed */
   onCollapse?: () => void;
+  /** Display scale factor for projector/classroom use (default 1.0) */
+  scale?: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -42,6 +44,7 @@ export default function TileColumn({
   column,
   onTilePress,
   onCollapse,
+  scale = 1.0,
 }: TileColumnProps) {
   const handleTilePress = useCallback(
     (grapheme: Grapheme) => {
@@ -91,15 +94,16 @@ export default function TileColumn({
       </View>
 
       {/* Tile grid */}
-      <View style={styles.tileGrid}>
+      <View style={[styles.tileGrid, { gap: 6 * scale }]}>
         {rows.map((row, rowIndex) => (
-          <View key={`row-${rowIndex}`} style={styles.tileRow}>
+          <View key={`row-${rowIndex}`} style={[styles.tileRow, { gap: 6 * scale }]}>
             {row.map((grapheme) => (
               <View key={grapheme.id} style={styles.tileWrapper}>
                 <Tile
                   grapheme={grapheme}
                   onPress={() => handleTilePress(grapheme)}
                   size="small"
+                  scale={scale}
                 />
               </View>
             ))}

@@ -24,6 +24,8 @@ export interface TileProps {
   size?: 'small' | 'medium' | 'large';
   /** Whether the tile is currently selected */
   isSelected?: boolean;
+  /** Display scale factor for projector/classroom use (default 1.0) */
+  scale?: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -48,15 +50,23 @@ export default function Tile({
   onPress,
   size = 'medium',
   isSelected = false,
+  scale = 1.0,
 }: TileProps) {
   const dimensions = SIZE_MAP[size];
   const bgColor = getTileColor(grapheme.type);
 
+  // Apply scale, but enforce minimum 44px touch target
+  const scaledMinSize = Math.max(44, dimensions.minSize * scale);
+  const scaledPaddingH = dimensions.paddingH * scale;
+  const scaledPaddingV = dimensions.paddingV * scale;
+  const scaledFontSize = dimensions.fontSize * scale;
+  const scaledBorderRadius = 10 * scale;
+
   const containerStyle: ViewStyle = {
-    minWidth: dimensions.minSize,
-    minHeight: dimensions.minSize,
-    paddingHorizontal: dimensions.paddingH,
-    paddingVertical: dimensions.paddingV,
+    minWidth: scaledMinSize,
+    minHeight: scaledMinSize,
+    paddingHorizontal: scaledPaddingH,
+    paddingVertical: scaledPaddingV,
     backgroundColor: bgColor,
     borderWidth: isSelected ? 3 : 0,
     borderColor: isSelected ? '#264653' : 'transparent',
@@ -69,6 +79,7 @@ export default function Tile({
       style={({ pressed }) => [
         styles.base,
         containerStyle,
+        { borderRadius: scaledBorderRadius },
         pressed && onPress ? styles.pressed : undefined,
       ]}
       accessibilityRole="button"
@@ -76,7 +87,7 @@ export default function Tile({
       accessibilityState={{ selected: isSelected }}
     >
       <Text
-        style={[styles.label, { fontSize: dimensions.fontSize }]}
+        style={[styles.label, { fontSize: scaledFontSize }]}
         numberOfLines={1}
       >
         {grapheme.text}

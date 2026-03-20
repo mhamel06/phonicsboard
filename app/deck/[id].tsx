@@ -5,7 +5,7 @@
  * and renders the DeckControls + DeckBoard layout.
  */
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Stack } from 'expo-router';
@@ -22,6 +22,10 @@ import {
 } from '@/store/decksSlice';
 import DeckBoard from '@/components/deck/DeckBoard';
 import DeckControls from '@/components/deck/DeckControls';
+import ScaleControls from '@/components/common/ScaleControls';
+import { useKeyboardNav } from '@/hooks/useKeyboardNav';
+import useDisplayScale from '@/hooks/useDisplayScale';
+import KeyboardHints from '@/components/common/KeyboardHints';
 
 // ---------------------------------------------------------------------------
 // History modal (simple inline for now)
@@ -78,6 +82,9 @@ export default function DeckPlayScreen() {
   const deckState = useAppSelector((state) => state.decks.activeDeckState);
 
   const [showHistory, setShowHistory] = useState(false);
+  const [showHints, setShowHints] = useState(false);
+  const { scale, scaleUp, scaleDown, resetScale, canScaleUp, canScaleDown } =
+    useDisplayScale();
 
   // Initialize deck state when the screen mounts or deck changes
   useEffect(() => {
@@ -123,6 +130,29 @@ export default function DeckPlayScreen() {
     setShowHistory((prev) => !prev);
   }, []);
 
+  // Keyboard navigation (web only)
+  const keyboardConfig = useMemo(
+    () => ({
+      escape: handleBack,
+      r: handleReset,
+      s: handleShuffle,
+      h: handleHistory,
+      'shift+?': () => setShowHints((prev) => !prev),
+    }),
+    [handleBack, handleReset, handleShuffle, handleHistory],
+  );
+  useKeyboardNav(keyboardConfig);
+
+  const deckHints = useMemo(
+    () => [
+      { key: 'Esc', action: 'Go back' },
+      { key: 'R', action: 'Reset cards' },
+      { key: 'S', action: 'Shuffle' },
+      { key: 'H', action: 'Toggle history' },
+    ],
+    [],
+  );
+
   // Loading / not found states
   if (!deck) {
     return (
@@ -159,6 +189,7 @@ export default function DeckPlayScreen() {
         onShuffle={handleShuffle}
         onReset={handleReset}
         onHistory={handleHistory}
+        scale={scale}
       />
 
       {showHistory && (
@@ -167,6 +198,17 @@ export default function DeckPlayScreen() {
           onClose={() => setShowHistory(false)}
         />
       )}
+
+      <ScaleControls
+        scale={scale}
+        onScaleUp={scaleUp}
+        onScaleDown={scaleDown}
+        onReset={resetScale}
+        canScaleUp={canScaleUp}
+        canScaleDown={canScaleDown}
+      />
+
+      <KeyboardHints hints={deckHints} visible={showHints} />
     </View>
   );
 }

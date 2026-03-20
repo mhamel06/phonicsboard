@@ -6,7 +6,7 @@
  * Bottom: WordChainBar (hidden in focus mode).
  */
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 
@@ -20,7 +20,11 @@ import {
 } from '@/store/playlistsSlice';
 import PlaylistPlayer from '@/components/playlist/PlaylistPlayer';
 import WordChainBar from '@/components/playlist/WordChainBar';
+import ScaleControls from '@/components/common/ScaleControls';
 import { APP_COLORS } from '@/utils/colors';
+import { useKeyboardNav } from '@/hooks/useKeyboardNav';
+import useDisplayScale from '@/hooks/useDisplayScale';
+import KeyboardHints from '@/components/common/KeyboardHints';
 
 // ---------------------------------------------------------------------------
 // Component
@@ -38,6 +42,10 @@ export default function PlaylistPlayScreen() {
     (state) => state.playlists.activePlaylistState,
   );
 
+  const [showHints, setShowHints] = useState(false);
+  const { scale, scaleUp, scaleDown, resetScale, canScaleUp, canScaleDown } =
+    useDisplayScale();
+
   // Initialize active playlist state on mount
   useEffect(() => {
     if (playlist) {
@@ -47,6 +55,35 @@ export default function PlaylistPlayScreen() {
       dispatch(setActivePlaylist(null));
     };
   }, [playlist, dispatch]);
+
+  // Keyboard navigation (web only)
+  const keyboardConfig = useMemo(
+    () => ({
+      arrowleft: () => dispatch(previousWordAction()),
+      arrowright: () => {
+        if (playlist) dispatch(nextWordAction(playlist));
+      },
+      escape: () => router.back(),
+      f: () => dispatch(toggleFocusModeAction()),
+      ' ': () => {
+        /* Space — replay audio (placeholder for future audio support) */
+      },
+      'shift+?': () => setShowHints((prev) => !prev),
+    }),
+    [dispatch, playlist, router],
+  );
+  useKeyboardNav(keyboardConfig);
+
+  const playlistHints = useMemo(
+    () => [
+      { key: '\u2190', action: 'Previous word' },
+      { key: '\u2192', action: 'Next word' },
+      { key: 'Esc', action: 'Go back' },
+      { key: 'F', action: 'Toggle focus mode' },
+      { key: 'Space', action: 'Replay audio' },
+    ],
+    [],
+  );
 
   // Loading / not found
   if (!playlist || !playlistState) {
@@ -103,6 +140,7 @@ export default function PlaylistPlayScreen() {
         onNext={handleNext}
         onPrevious={handlePrevious}
         onToggleFocus={handleToggleFocus}
+        scale={scale}
       />
 
       {/* Word chain bar — hidden in focus mode */}
@@ -125,6 +163,17 @@ export default function PlaylistPlayScreen() {
           <Text style={styles.focusExitText}>Tap to exit focus mode</Text>
         </Pressable>
       )}
+
+      <ScaleControls
+        scale={scale}
+        onScaleUp={scaleUp}
+        onScaleDown={scaleDown}
+        onReset={resetScale}
+        canScaleUp={canScaleUp}
+        canScaleDown={canScaleDown}
+      />
+
+      <KeyboardHints hints={playlistHints} visible={showHints} />
     </View>
   );
 }
