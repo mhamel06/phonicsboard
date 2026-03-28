@@ -9,6 +9,8 @@ export type GraphemeType =
   | 'digraph'        // ch, sh, th
   | 'vowel_team'     // ai, ea, ee
   | 'r_controlled'   // ar, er, ir
+  | 'prefix'         // re-, un-, pre-
+  | 'root'           // ject, spond, tract
   | 'suffix'         // es, ing, ed
   | 'schwa'          // unstressed vowel sound
   | 'heart'          // irregular/tricky words

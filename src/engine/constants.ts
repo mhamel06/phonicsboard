@@ -10,6 +10,8 @@ export const TILE_COLORS: Record<GraphemeType, TileColor> = {
   digraph: 'orange',
   vowel_team: 'teal',
   r_controlled: 'teal',
+  prefix: 'pink',
+  root: 'orange',
   suffix: 'purple',
   schwa: 'green',
   heart: 'pink',
@@ -67,7 +69,7 @@ export const APP_COLORS = {
 export const MAX_COLUMNS = 6;
 
 /** Maximum character length for a grapheme's text */
-export const MAX_GRAPHEME_LENGTH = 5;
+export const MAX_GRAPHEME_LENGTH = 12;
 
 // === Classification Sets ===
 

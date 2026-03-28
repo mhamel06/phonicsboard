@@ -19,6 +19,8 @@ export const TYPE_LABELS: Record<GraphemeType, string> = {
   digraph: 'digraphs',
   vowel_team: 'vowel teams',
   r_controlled: 'r-controlled',
+  prefix: 'prefixes',
+  root: 'roots',
   suffix: 'suffixes',
   schwa: 'schwa',
   heart: 'heart words',
@@ -27,8 +29,8 @@ export const TYPE_LABELS: Record<GraphemeType, string> = {
 
 /** Canonical ordering for sub-groups within a column */
 const TYPE_ORDER: GraphemeType[] = [
-  'consonant', 'blend', 'digraph', 'vowel', 'vowel_team',
-  'r_controlled', 'suffix', 'schwa', 'heart', 'blank',
+  'prefix', 'consonant', 'blend', 'digraph', 'vowel', 'vowel_team',
+  'r_controlled', 'root', 'suffix', 'schwa', 'heart', 'blank',
 ];
 
 export interface TileGroup {
