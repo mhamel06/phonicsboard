@@ -5,7 +5,7 @@
  * Only functional when the user is authenticated; hidden for guests.
  */
 
-import React, { useCallback, useState } from 'react';
+import React, { useState } from 'react';
 import {
   ActivityIndicator,
   Modal,
@@ -102,8 +102,7 @@ export default function ShareButton({
       return;
     }
 
-    const resourceData = resourceType === 'deck' ? deck : playlist;
-    if (!resourceData) {
+    if (resourceType === 'deck' ? !deck : !playlist) {
       setError('Resource not found');
       setModalVisible(true);
       return;
@@ -111,10 +110,11 @@ export default function ShareButton({
 
     setModalVisible(true);
 
-    const result =
-      resourceType === 'deck'
-        ? await shareDeck(userId, resourceData)
-        : await sharePlaylist(userId, resourceData);
+    const result = deck
+      ? await shareDeck(userId, deck)
+      : playlist
+        ? await sharePlaylist(userId, playlist)
+        : null;
 
     if (result) {
       setShareCode(result.shareCode);

@@ -15,7 +15,6 @@ export function useAudio() {
   const playPhoneme = useCallback(
     (text: string) => {
       if (!audioEnabled) return;
-      // eslint-disable-next-line no-console
       console.log(`[Audio] Playing phoneme: "${text}"`);
       setIsPlaying(true);
       // Simulate brief playback duration
@@ -28,7 +27,6 @@ export function useAudio() {
     (graphemes: string[]) => {
       if (!audioEnabled) return;
       const word = graphemes.join('');
-      // eslint-disable-next-line no-console
       console.log(`[Audio] Playing word: "${word}" [${graphemes.join(', ')}]`);
       setIsPlaying(true);
       // Simulate playback duration based on grapheme count

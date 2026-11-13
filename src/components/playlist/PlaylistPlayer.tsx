@@ -11,8 +11,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import type { Playlist, PlaylistState } from '@/engine/types';
 import { getCurrentWord } from '@/engine/playlist';
-import { isVowel } from '@/engine/phonics';
-import { classifyGrapheme } from '@/engine/phonics';
+import { isVowel , classifyGrapheme } from '@/engine/phonics';
 import CardSlot from '@/components/common/CardSlot';
 import { APP_COLORS } from '@/utils/colors';
 

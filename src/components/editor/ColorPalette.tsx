@@ -10,8 +10,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 
 import type { TileColor } from '@/engine/types';
-import { TILE_COLOR_HEX, EDITOR_PALETTE_COLORS } from '@/utils/colors';
-import { APP_COLORS } from '@/utils/colors';
+import { TILE_COLOR_HEX, EDITOR_PALETTE_COLORS , APP_COLORS } from '@/utils/colors';
 
 // ---------------------------------------------------------------------------
 // Types

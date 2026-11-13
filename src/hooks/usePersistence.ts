@@ -146,8 +146,8 @@ export function usePersistence(): boolean {
   // --- Cleanup timers on unmount ---
 
   useEffect(() => {
+    const timers = debounceTimers.current;
     return () => {
-      const timers = debounceTimers.current;
       if (timers.decks) clearTimeout(timers.decks);
       if (timers.playlists) clearTimeout(timers.playlists);
       if (timers.settings) clearTimeout(timers.settings);
