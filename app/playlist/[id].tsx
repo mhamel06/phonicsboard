@@ -68,7 +68,8 @@ export default function PlaylistPlayScreen() {
         if (playlistState?.isFocusMode) {
           dispatch(toggleFocusModeAction());
         } else {
-          router.canGoBack() ? router.back() : router.replace('/playlists');
+          if (router.canGoBack()) router.back();
+          else router.replace('/playlists');
         }
       },
       f: () => dispatch(toggleFocusModeAction()),

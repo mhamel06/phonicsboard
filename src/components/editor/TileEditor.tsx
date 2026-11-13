@@ -9,15 +9,13 @@ import React, { useRef } from 'react';
 import {
   Pressable,
   StyleSheet,
-  Text,
   TextInput,
   View,
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 
 import type { Grapheme, TileColor } from '@/engine/types';
-import { TILE_COLOR_HEX } from '@/utils/colors';
-import { APP_COLORS } from '@/utils/colors';
+import { TILE_COLOR_HEX , APP_COLORS } from '@/utils/colors';
 
 // ---------------------------------------------------------------------------
 // Types

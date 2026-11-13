@@ -5,7 +5,7 @@
  * See docs/ARCHITECTURE.md Section 5 for full design system spec.
  */
 
-import type { GraphemeType } from '@/engine/types';
+import type { GraphemeType, TileColor } from '@/engine/types';
 
 // ---------------------------------------------------------------------------
 // App-wide colors
@@ -65,8 +65,6 @@ export const VOWEL_DISPLAY_COLOR = '#F2CC8F';
 // ---------------------------------------------------------------------------
 // TileColor → hex mapping — used by the deck editor color palette
 // ---------------------------------------------------------------------------
-
-import type { TileColor } from '@/engine/types';
 
 export const TILE_COLOR_HEX: Record<TileColor, string> = {
   white: '#FFFFFF',

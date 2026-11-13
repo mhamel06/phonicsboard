@@ -17,7 +17,7 @@ import {
 import { Feather } from '@expo/vector-icons';
 
 import type { Deck, DeckColumn, Grapheme, GraphemeType, TileColor } from '@/engine/types';
-import { APP_COLORS, TILE_COLOR_HEX } from '@/utils/colors';
+import { APP_COLORS } from '@/utils/colors';
 import { classifyGrapheme } from '@/engine/phonics';
 import { TILE_COLORS } from '@/engine/constants';
 import ColorPalette from './ColorPalette';

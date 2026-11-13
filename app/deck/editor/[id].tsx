@@ -6,9 +6,8 @@
  */
 
 import React, { useCallback, useMemo, useState } from 'react';
-import { ActivityIndicator, Alert, StyleSheet, Text, TextInput, View } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Stack } from 'expo-router';
+import { ActivityIndicator, StyleSheet, Text, TextInput, View } from 'react-native';
+import { useLocalSearchParams, useRouter , Stack } from 'expo-router';
 
 import type { Deck } from '@/engine/types';
 import { APP_COLORS } from '@/utils/colors';

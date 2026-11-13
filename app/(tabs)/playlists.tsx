@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FlatList, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Alert, FlatList, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 
 import { useAppDispatch, useAppSelector } from '@/store/store';
@@ -151,7 +151,6 @@ export default function PlaylistsScreen() {
                             dispatch(deletePlaylist(item.id));
                           }
                         } else {
-                          const { Alert } = require('react-native');
                           Alert.alert(
                             'Delete Playlist',
                             `Are you sure you want to delete "${item.name}"?`,

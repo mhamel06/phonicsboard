@@ -4,7 +4,12 @@ on:
   push:
     branches:
       - main
+  pull_request:
   workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
   DEPLOY_HOST: ${{ secrets.DROPLET_HOST }}
@@ -12,11 +17,12 @@ env:
 
 jobs:
   # ---------------------------------------------------------------------------
-  # 1. Test
+  # 1. Verify — lint, typecheck, test, build (runs on every PR and push)
   # ---------------------------------------------------------------------------
-  test:
-    name: Test
+  verify:
+    name: Verify
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -24,7 +30,14 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
-      - run: npm test
+      - name: Lint
+        run: npm run lint -- --max-warnings 0
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Test
+        run: npm test
+      - name: Build web app
+        run: npx expo export --platform web
 
   # ---------------------------------------------------------------------------
   # 2. Build web app + Deploy to Droplet
@@ -32,7 +45,8 @@ jobs:
   deploy:
     name: Deploy to Droplet
     runs-on: ubuntu-latest
-    needs: test
+    needs: verify
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
