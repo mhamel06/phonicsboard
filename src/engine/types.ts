@@ -84,6 +84,8 @@ export interface Playlist {
   words: PlaylistWord[];
   isPreset: boolean;
   createdAt: string;
+  /** Last edit time; used for sync conflict resolution. Falls back to createdAt. */
+  updatedAt?: string;
 }
 
 /** A single word in a playlist, decomposed into graphemes */

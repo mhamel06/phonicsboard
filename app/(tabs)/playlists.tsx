@@ -125,6 +125,7 @@ export default function PlaylistsScreen() {
                         name: `${item.name} (Edit)`,
                         isPreset: false,
                         createdAt: new Date().toISOString(),
+                        updatedAt: new Date().toISOString(),
                       }),
                     );
                     router.push(`/playlist/editor/${copyId}`);
@@ -140,6 +141,7 @@ export default function PlaylistsScreen() {
                       name: `${item.name} (Copy)`,
                       isPreset: false,
                       createdAt: new Date().toISOString(),
+                      updatedAt: new Date().toISOString(),
                     }),
                   );
                 }}

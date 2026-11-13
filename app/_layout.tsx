@@ -12,7 +12,7 @@ function AppShell() {
   // Load persisted local data (decks, playlists, settings)
   const hydrated = usePersistence();
   // Sync to cloud when authenticated (no-ops in guest mode)
-  useCloudSync();
+  useCloudSync(hydrated);
 
   return (
     <HydrationContext.Provider value={hydrated}>

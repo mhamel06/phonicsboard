@@ -177,6 +177,7 @@ export default function PlaylistEditorView({
       words: trimmedWords.map((w, i) => ({ ...w, position: i })),
       isPreset: false,
       createdAt: playlist?.createdAt ?? new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     };
     onSave(saved);
   }, [name, words, playlist, linkedDeck.id, onSave]);

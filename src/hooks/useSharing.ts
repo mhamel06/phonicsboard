@@ -8,6 +8,7 @@ import {
   shareDeck as shareDeckService,
   sharePlaylist as sharePlaylistService,
   importSharedResource,
+  toImportedResource,
 } from '@/services/sharing';
 import type { Deck, Playlist } from '@/engine/types';
 
@@ -101,26 +102,11 @@ export function useSharing(): UseSharingResult {
           return false;
         }
 
-        const { resourceType, data } = result;
-
-        if (resourceType === 'deck') {
-          const deck = data as Deck;
-          const importedDeck: Deck = {
-            ...deck,
-            isPreset: false,
-            updatedAt: new Date().toISOString(),
-          };
-          dispatch(addDeck(importedDeck));
-        } else if (resourceType === 'playlist') {
-          const playlist = data as Playlist;
-          const importedPlaylist: Playlist = {
-            ...playlist,
-            isPreset: false,
-          };
-          dispatch(addPlaylist(importedPlaylist));
+        const imported = toImportedResource(result);
+        if (imported.resourceType === 'deck') {
+          dispatch(addDeck(imported.data));
         } else {
-          console.warn('[useSharing] Unknown resource type:', resourceType);
-          return false;
+          dispatch(addPlaylist(imported.data));
         }
 
         return true;
